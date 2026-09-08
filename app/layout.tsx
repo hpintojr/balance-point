@@ -34,17 +34,17 @@ export const metadata: Metadata = {
     description: "Find your balance point. Trust the process.",
     type: "website",
     images: [{
-      url: "/nav-logo.png",
-      width: 2172,
-      height: 724,
-      alt: "Balance Point Certified logo",
+      url: "/hero-logo.jpg",
+      width: 1254,
+      height: 1254,
+      alt: "Balance Point Certified hero logo",
     }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Balance Point Certified",
     description: "Find your balance point. Trust the process.",
-    images: ["/nav-logo.png"],
+    images: ["/hero-logo.jpg"],
   },
 };
 
