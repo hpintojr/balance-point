@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Balance Point Certified</title>
+  <desc id="desc">Neon blue and magenta Balance Point Certified motorcycle training logo.</desc>
+  <defs>
+    <linearGradient id="neon" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#27c7ff"/>
+      <stop offset="0.48" stop-color="#6f66ff"/>
+      <stop offset="1" stop-color="#ff23c8"/>
+    </linearGradient>
+    <linearGradient id="neonReverse" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#27c7ff"/>
+      <stop offset="1" stop-color="#ff23c8"/>
+    </linearGradient>
+    <radialGradient id="core" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset="0.25" stop-color="#ffb7f0"/>
+      <stop offset="0.6" stop-color="#ff23c8"/>
+      <stop offset="1" stop-color="#ff23c8" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="softGlow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="24" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1000" height="1000" fill="#020307"/>
+  <circle cx="500" cy="420" r="338" fill="none" stroke="url(#neon)" stroke-width="8" opacity=".42" filter="url(#softGlow)"/>
+  <circle cx="500" cy="420" r="338" fill="none" stroke="url(#neon)" stroke-width="3" filter="url(#glow)"/>
+  <path d="M177 315c74-177 286-281 474-210" fill="none" stroke="#27c7ff" stroke-width="8" stroke-linecap="round" opacity=".9" filter="url(#glow)"/>
+  <path d="M650 106c132 48 224 164 256 293" fill="none" stroke="#ff23c8" stroke-width="8" stroke-linecap="round" opacity=".9" filter="url(#glow)"/>
+
+  <g opacity=".88" filter="url(#glow)" fill="none" stroke="url(#neonReverse)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M276 512C350 346 452 267 572 257c108-9 165 32 169 93 5 73-68 118-204 139-121 18-211 55-269 111 58 32 140 36 242 9 134-36 239-34 302 7"/>
+    <path d="M395 250c63 13 133 32 208 58 112 39 163 86 153 140-11 57-92 93-244 107-90 8-151 35-183 80"/>
+  </g>
+
+  <g transform="translate(500 394) rotate(-2)" filter="url(#glow)">
+    <circle cx="0" cy="180" r="48" fill="none" stroke="#ff23c8" stroke-width="12"/>
+    <circle cx="0" cy="-100" r="38" fill="#080b12" stroke="#27c7ff" stroke-width="7"/>
+    <path d="M-18-63L-36 55 0 128 36 55 18-63Z" fill="#05070d" stroke="url(#neon)" stroke-width="8"/>
+    <path d="M-35-45L-93-1M35-45L93-1" stroke="url(#neon)" stroke-width="11" stroke-linecap="round"/>
+    <path d="M-90-4L-112 26M90-4L112 26" stroke="#27c7ff" stroke-width="9" stroke-linecap="round"/>
+    <path d="M-20 95L-24 178M20 95L24 178" stroke="#ff23c8" stroke-width="10" stroke-linecap="round"/>
+    <path d="M0-142L0 228" stroke="#ff49d4" stroke-width="3" opacity=".7"/>
+    <circle cx="0" cy="128" r="34" fill="url(#core)"/>
+  </g>
+
+  <ellipse cx="500" cy="720" rx="265" ry="54" fill="none" stroke="url(#neon)" stroke-width="5" opacity=".72" filter="url(#glow)"/>
+  <ellipse cx="500" cy="720" rx="183" ry="34" fill="none" stroke="url(#neonReverse)" stroke-width="3" opacity=".6"/>
+
+  <g text-anchor="middle" font-family="Arial, Helvetica, sans-serif">
+    <text x="500" y="848" font-size="92" font-weight="900" letter-spacing="-5" fill="url(#neon)" filter="url(#glow)">BALANCE POINT</text>
+    <text x="500" y="906" font-size="35" font-weight="700" letter-spacing="18" fill="#eef3ff">CERTIFIED</text>
+  </g>
+  <path d="M165 932H397M603 932H835" stroke="url(#neon)" stroke-width="4" opacity=".9"/>
+  <circle cx="500" cy="932" r="11" fill="#ff23c8" filter="url(#glow)"/>
+</svg>
