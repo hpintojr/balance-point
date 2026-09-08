@@ -101,7 +101,7 @@ export default function Home() {
           <div className="orb orb-one" />
           <div className="orb orb-two" />
           <div className="logo-frame">
-            <Image src="/logo.jpg" alt="Balance Point Certified logo" width={900} height={900} priority />
+            <Image src="/logo.svg" alt="Balance Point Certified logo" width={900} height={900} priority />
           </div>
         </div>
       </section>
