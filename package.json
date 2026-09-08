@@ -1,0 +1,27 @@
+{
+  "name": "balance-point-certified-booking",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@types/luxon": "^3.7.1",
+    "googleapis": "^156.0.0",
+    "luxon": "^3.7.2",
+    "next": "^15.5.2",
+    "node-mailjet": "^6.0.9",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "stripe": "^18.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.30",
+    "@types/react": "^19.1.6",
+    "@types/react-dom": "^19.1.6",
+    "typescript": "^5.8.3"
+  }
+}
