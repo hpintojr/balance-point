@@ -2,7 +2,6 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import { packages } from "@/lib/packages";
-import { realLogoDataUri } from "@/lib/brand-assets";
 
 type Slot = { start: string; label: string };
 
@@ -87,8 +86,7 @@ export default function Home() {
       <header className="site-nav">
         <div className="nav-inner shell">
           <a className="nav-brand" href="#top" aria-label="Balance Point Certified home" onClick={closeMenu}>
-            <img src={realLogoDataUri} alt="" className="nav-brand-mark" />
-            <span className="nav-brand-copy"><strong><b>BALANCE</b> POINT</strong><small>CERTIFIED</small></span>
+            <img src="/nav-logo.png" alt="Balance Point Certified" className="nav-brand-mark" />
           </a>
 
           <nav className={`desktop-nav ${menuOpen ? "mobile-open" : ""}`} aria-label="Primary navigation">
@@ -110,7 +108,6 @@ export default function Home() {
         <div className="hero-overlay" />
         <div className="hero-shell shell">
           <div className="hero-content">
-            <img className="hero-logo" src={realLogoDataUri} alt="Balance Point Certified" />
             <h1><span className="hero-white">FIND YOUR</span><span className="hero-gradient">BALANCE POINT.</span></h1>
             <p className="hero-description">One-on-one motorcycle wheelie training built around progression, not pressure. Learn the clutch-up, rear brake control, clean technique, and build toward consistency.</p>
             <div className="hero-buttons">
