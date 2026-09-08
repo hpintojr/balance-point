@@ -58,7 +58,7 @@
 /* Desktop composition mirrors the supplied mockup. */
 .cinematic-hero {
   min-height: 990px;
-  background-image: url('/desktop-view-hero.png');
+  background-image: url('/desktop-hero-background.png');
   background-position: center top;
   background-size: 100% auto;
   background-color: #010205;
@@ -79,7 +79,17 @@
 
 .hero-content {
   width: 100%;
-  padding-top: 540px;
+  padding-top: 8px;
+}
+
+.hero-art-logo {
+  display: block;
+  width: min(360px, 65%);
+  height: auto;
+  margin: -8px 0 70px 0;
+  object-fit: contain;
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 18px rgba(32,198,255,.12)) drop-shadow(0 0 20px rgba(255,43,209,.10));
 }
 
 .hero-content h1 {
@@ -218,7 +228,8 @@
   .desktop-nav { gap: 24px; font-size: 13px; }
   .nav-book { padding: 0 20px; font-size: 13px; }
   .hero-shell { width: min(100% - 54px,1180px); grid-template-columns: minmax(0,650px) 1fr; }
-  .hero-content { padding-top: 520px; }
+  .hero-content { padding-top: 18px; }
+  .hero-art-logo { width: min(330px, 62%); margin-bottom: 60px; }
   .hero-feature-bar { width: min(100% - 54px,1180px); }
   .hero-feature-bar > div { padding: 0 22px; }
   .hero-feature-bar strong { font-size: 15px; }
@@ -257,6 +268,8 @@
     margin: 0 auto;
     padding-top: 0;
   }
+
+  .hero-art-logo { display: none; }
 
   .hero-content h1 {
     width: 100%;

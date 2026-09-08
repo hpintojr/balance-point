@@ -108,6 +108,7 @@ export default function Home() {
         <div className="hero-overlay" />
         <div className="hero-shell shell">
           <div className="hero-content">
+            <img className="hero-art-logo" src="/hero-logo.jpg" alt="Balance Point Certified" />
             <h1><span className="hero-white">FIND YOUR</span><span className="hero-gradient">BALANCE POINT.</span></h1>
             <p className="hero-description">One-on-one motorcycle wheelie training built around progression, not pressure. Learn the clutch-up, rear brake control, clean technique, and build toward consistency.</p>
             <div className="hero-buttons">
