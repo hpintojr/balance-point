@@ -57,8 +57,6 @@ img, svg { display: block; }
 .hero-button-secondary { border: 1px solid rgba(255,255,255,.64); color: white; background: rgba(0,0,0,.46); }
 .hero-button-secondary:hover { border-color: var(--cyan); box-shadow: 0 0 22px rgba(32,198,255,.16); }
 .calendar-icon { font-size: 18px; }
-.hero-message { justify-self: end; align-self: center; margin: 230px 12px 0 0; max-width: 300px; text-align: center; color: rgba(230,235,245,.76); font-size: 42px; font-weight: 900; font-style: italic; line-height: .95; letter-spacing: -.035em; transform: rotate(-4deg); text-shadow: 0 0 14px rgba(31,182,255,.12); }
-.hero-message span { color: rgba(241,81,224,.84); }
 .hero-feature-bar { position: relative; z-index: 3; min-height: 118px; display: grid; grid-template-columns: repeat(4,1fr); align-items: center; border-top: 1px solid rgba(255,255,255,.12); background: linear-gradient(90deg,rgba(0,0,0,.43),rgba(0,0,0,.20)); }
 .hero-feature-bar > div { min-height: 72px; display: flex; align-items: center; gap: 16px; padding: 0 28px; border-right: 1px solid rgba(255,255,255,.16); }
 .hero-feature-bar > div:first-child { padding-left: 14px; }
@@ -170,7 +168,6 @@ footer { padding: 58px 0 34px; border-top: 1px solid var(--line); }
   .nav-brand { min-width: auto; }
   .desktop-nav { gap: 21px; font-size: 13px; }
   .hero-shell { grid-template-columns: minmax(0,600px) 1fr; }
-  .hero-message { font-size: 34px; margin-right: 0; }
   .package-grid { grid-template-columns: repeat(2,1fr); }
   .package-card.featured { transform: none; }
   .booking-layout,.section-head { grid-template-columns: 1fr; }
@@ -200,7 +197,6 @@ footer { padding: 58px 0 34px; border-top: 1px solid var(--line); }
   .hero-gradient { margin: 0 auto; }
   .hero-description { margin: 18px auto 0; max-width: 580px; text-align: center; font-size: 16px; }
   .hero-buttons { justify-content: center; }
-  .hero-message { display: none; }
   .hero-feature-bar { min-height: 185px; grid-template-columns: 1fr 1fr; align-content: center; gap: 12px 0; padding: 18px 0; background: rgba(0,0,0,.62); }
   .hero-feature-bar > div { min-height: 64px; border-right: 0; padding: 0 16px; }
   .hero-feature-bar > div:nth-child(odd) { border-right: 1px solid rgba(255,255,255,.12); }

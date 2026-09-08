@@ -34,17 +34,17 @@ export const metadata: Metadata = {
     description: "Find your balance point. Trust the process.",
     type: "website",
     images: [{
-      url: "/desktop-view-hero.png",
-      width: 1680,
-      height: 945,
-      alt: "Balance Point Certified motorcycle training",
+      url: "/nav-logo.png",
+      width: 2172,
+      height: 724,
+      alt: "Balance Point Certified logo",
     }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Balance Point Certified",
     description: "Find your balance point. Trust the process.",
-    images: ["/desktop-view-hero.png"],
+    images: ["/nav-logo.png"],
   },
 };
 

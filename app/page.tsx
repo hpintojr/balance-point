@@ -7,7 +7,7 @@ type Slot = { start: string; label: string };
 
 function FeatureIcon({ type }: { type: "skills" | "progress" | "coach" | "cert" }) {
   if (type === "skills") {
-    return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v3M12 19v3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M2 12h3M19 12h3M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12"/><circle cx="12" cy="12" r="4"/></svg>;
+    return <svg viewBox="-1 -1 26 26" aria-hidden="true"><path d="M12 2v3M12 19v3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M2 12h3M19 12h3M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12"/><circle cx="12" cy="12" r="4"/></svg>;
   }
   if (type === "progress") {
     return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V13h4v7M10 20V8h4v12M16 20V4h4v16M3 20h18"/></svg>;
@@ -15,7 +15,7 @@ function FeatureIcon({ type }: { type: "skills" | "progress" | "coach" | "cert" 
   if (type === "coach") {
     return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v5c0 5.2-3.4 8.6-8 10-4.6-1.4-8-4.8-8-10V6l8-3z"/><path d="M8.5 12l2.2 2.2 4.8-5"/></svg>;
   }
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 19c-1.5-1.7-2.5-4.2-2.5-7A8.5 8.5 0 0 1 12 3.5a8.5 8.5 0 0 1 8.5 8.5c0 2.8-1 5.3-2.5 7"/><path d="M6 19h12M7 11h10M8 15h8"/></svg>;
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l3 3v8.5M15 3v4h3M9 9h6M9 12h4"/><circle cx="15.5" cy="17" r="2.5"/><path d="M14 19l-.5 2 2-1 2 1-.5-2"/></svg>;
 }
 
 export default function Home() {
@@ -116,7 +116,6 @@ export default function Home() {
               <a className="hero-button hero-button-secondary" href="#training">View Packages <span aria-hidden="true">→</span></a>
             </div>
           </div>
-          <div className="hero-message" aria-hidden="true">PROGRESSION<br/>OVER <span>PRESSURE.</span></div>
         </div>
 
         <div className="hero-feature-bar shell">
