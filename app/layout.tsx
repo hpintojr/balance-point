@@ -3,8 +3,30 @@ import "./globals.css";
 import "./hero.css";
 import "./icon-refine.css";
 
+function parseSiteUrl(value: string | undefined) {
+  const candidate = value?.trim();
+  if (!candidate) return null;
+
+  try {
+    return new URL(candidate.includes("://") ? candidate : `https://${candidate}`);
+  } catch {
+    return null;
+  }
+}
+
+function getMetadataBase() {
+  const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  const configuredMetadataBase = parseSiteUrl(configuredUrl);
+  if (configuredMetadataBase) return configuredMetadataBase;
+
+  const vercelUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim()
+    || process.env.VERCEL_URL?.trim();
+
+  return parseSiteUrl(vercelUrl) || new URL("https://balance-point-five.vercel.app");
+}
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://balance-point-five.vercel.app"),
+  metadataBase: getMetadataBase(),
   title: "Balance Point Certified | Private Wheelie Training",
   description: "Private progressive motorcycle wheelie training focused on clutch-up technique, rear-brake control, balance-point development, and consistency.",
   openGraph: {
