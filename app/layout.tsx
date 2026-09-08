@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./hero.css";
+import "./icon-refine.css";
 
 export const metadata: Metadata = {
   title: "Balance Point Certified | Private Wheelie Training",
