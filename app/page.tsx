@@ -2,9 +2,21 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import { packages } from "@/lib/packages";
-import { heroReferenceDataUri, realLogoDataUri } from "@/lib/brand-assets";
 
 type Slot = { start: string; label: string };
+
+function FeatureIcon({ type }: { type: "skills" | "progress" | "coach" | "cert" }) {
+  if (type === "skills") {
+    return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v3M12 19v3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M2 12h3M19 12h3M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12"/><circle cx="12" cy="12" r="4"/></svg>;
+  }
+  if (type === "progress") {
+    return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V13h4v7M10 20V8h4v12M16 20V4h4v16M3 20h18"/></svg>;
+  }
+  if (type === "coach") {
+    return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v5c0 5.2-3.4 8.6-8 10-4.6-1.4-8-4.8-8-10V6l8-3z"/><path d="M8.5 12l2.2 2.2 4.8-5"/></svg>;
+  }
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 19c-1.5-1.7-2.5-4.2-2.5-7A8.5 8.5 0 0 1 12 3.5a8.5 8.5 0 0 1 8.5 8.5c0 2.8-1 5.3-2.5 7"/><path d="M6 19h12M7 11h10M8 15h8"/></svg>;
+}
 
 export default function Home() {
   const [packageId, setPackageId] = useState("balance-point-challenge");
@@ -14,6 +26,7 @@ export default function Home() {
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
   const selectedPackage = useMemo(() => packages.find((p) => p.id === packageId)!, [packageId]);
 
   async function loadSlots(nextDate: string) {
@@ -66,38 +79,52 @@ export default function Home() {
     }
   }
 
+  const closeMenu = () => setMenuOpen(false);
+
   return (
     <main>
-      <section className="approved-hero" id="top" aria-label="Balance Point Certified private motorcycle training">
-        <img className="approved-hero-reference" src={heroReferenceDataUri} alt="" aria-hidden="true" />
+      <header className="site-nav">
+        <div className="nav-inner shell">
+          <a className="nav-brand" href="#top" aria-label="Balance Point Certified home" onClick={closeMenu}>
+            <img src="/logo.svg" alt="" className="nav-brand-mark" />
+            <span className="nav-brand-copy"><strong><b>BALANCE</b> POINT</strong><small>CERTIFIED</small></span>
+          </a>
 
-        <div className="approved-nav-brand" aria-hidden="true">
-          <img src={realLogoDataUri} alt="" />
-          <div className="approved-wordmark">
-            <strong><span>BALANCE</span> POINT</strong>
-            <small>CERTIFIED</small>
+          <nav className={`desktop-nav ${menuOpen ? "mobile-open" : ""}`} aria-label="Primary navigation">
+            <a href="#top" onClick={closeMenu}>Home</a>
+            <a href="#training" onClick={closeMenu}>Training Packages</a>
+            <a href="#how-it-works" onClick={closeMenu}>How It Works</a>
+            <a href="#challenge" onClick={closeMenu}>About</a>
+            <a href="#faq" onClick={closeMenu}>FAQ</a>
+            <a href="#book" className="nav-book" onClick={closeMenu}>Book a Session</a>
+          </nav>
+
+          <button className="menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>
+            <span/><span/><span/>
+          </button>
+        </div>
+      </header>
+
+      <section className="cinematic-hero" id="top" aria-label="Balance Point Certified private motorcycle training">
+        <div className="hero-overlay" />
+        <div className="hero-shell shell">
+          <div className="hero-content">
+            <img className="hero-logo" src="/logo.svg" alt="Balance Point Certified" />
+            <h1><span className="hero-white">FIND YOUR</span><span className="hero-gradient">BALANCE POINT.</span></h1>
+            <p className="hero-description">One-on-one motorcycle wheelie training built around progression, not pressure. Learn the clutch-up, rear brake control, clean technique, and build toward consistency.</p>
+            <div className="hero-buttons">
+              <a className="hero-button hero-button-primary" href="#book"><span className="calendar-icon">▣</span>Book a Session <span aria-hidden="true">→</span></a>
+              <a className="hero-button hero-button-secondary" href="#training">View Packages <span aria-hidden="true">→</span></a>
+            </div>
           </div>
+          <div className="hero-message" aria-hidden="true">PROGRESSION<br/>OVER <span>PRESSURE.</span></div>
         </div>
 
-        <div className="approved-main-logo" aria-hidden="true">
-          <img src={realLogoDataUri} alt="" />
-        </div>
-
-        <nav className="approved-nav-links" aria-label="Primary navigation">
-          <a href="#top">Home</a>
-          <a href="#training">Training Packages</a>
-          <a href="#how-it-works">How It Works</a>
-          <a href="#challenge">About</a>
-          <a href="#book">FAQ</a>
-          <a href="#book" className="approved-nav-cta">BOOK A SESSION</a>
-        </nav>
-
-        <a className="hero-click hero-click-book" href="#book" aria-label="Book a session" />
-        <a className="hero-click hero-click-packages" href="#training" aria-label="View training packages" />
-
-        <div className="sr-only">
-          <h1>Find Your Balance Point</h1>
-          <p>One-on-one motorcycle wheelie training built around progression, not pressure. Learn clutch-up technique, rear-brake control, clean technique, and build toward consistency.</p>
+        <div className="hero-feature-bar shell">
+          <div><span className="feature-icon cyan"><FeatureIcon type="skills" /></span><p><strong>Real Skills</strong><small>Not shortcuts</small></p></div>
+          <div><span className="feature-icon magenta"><FeatureIcon type="progress" /></span><p><strong>Progression</strong><small>At your pace</small></p></div>
+          <div><span className="feature-icon cyan"><FeatureIcon type="coach" /></span><p><strong>Experienced</strong><small>One-on-one coaching</small></p></div>
+          <div><span className="feature-icon magenta"><FeatureIcon type="cert" /></span><p><strong>Certification</strong><small>When standards are met</small></p></div>
         </div>
       </section>
 
@@ -138,6 +165,17 @@ export default function Home() {
           <div><span>02</span><h3>Reserve your first session</h3><p>Select a live time from the training calendar and lock it in with a $20 deposit. The remaining balance is handled directly with the owner, including cash.</p></div>
           <div><span>03</span><h3>Train + review</h3><p>Private coaching, technique correction, and video feedback turn each session into the next step.</p></div>
           <div><span>04</span><h3>Earn the standard</h3><p>Certification is awarded when the required riding standards are demonstrated—not simply because sessions were completed.</p></div>
+        </div>
+      </section>
+
+      <section className="faq-section" id="faq">
+        <div className="shell">
+          <div className="section-head faq-head"><div><p className="eyebrow">FAQ</p><h2>Before you ride.</h2></div><p>Clear expectations before the first clutch-up.</p></div>
+          <div className="faq-grid">
+            <article><h3>Is balance point guaranteed in five sessions?</h3><p>No. The five-session Challenge is a structured goal, not a guarantee. Every rider progresses differently.</p></article>
+            <article><h3>How much do I pay online?</h3><p>Only a $20 reservation deposit. The remaining balance is collected directly by the owner, and cash is welcome.</p></article>
+            <article><h3>When do I earn certification?</h3><p>Certification is earned when the required riding standards are demonstrated—not simply because a package was completed.</p></article>
+          </div>
         </div>
       </section>
 
