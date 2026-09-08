@@ -1,43 +1,42 @@
-/* Exact icon silhouettes for the feature rail: gear, level-up bars, shield, helmet. */
-.hero-feature-bar .feature-icon svg { display: none; }
-.hero-feature-bar .feature-icon::before {
+/* Dedicated replacements for the two requested feature icons. */
+.hero-feature-bar > div:nth-child(1) .feature-icon svg,
+.hero-feature-bar > div:nth-child(4) .feature-icon svg {
+  display: none;
+}
+
+.hero-feature-bar > div:nth-child(1) .feature-icon::before,
+.hero-feature-bar > div:nth-child(4) .feature-icon::before {
   content: "";
-  width: 54px;
-  height: 54px;
   display: block;
+  width: 48px;
+  height: 48px;
   background: currentColor;
-  -webkit-mask-position: center;
-  mask-position: center;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-size: contain;
-  mask-size: contain;
+  -webkit-mask: center / contain no-repeat;
+  mask: center / contain no-repeat;
 }
 
 .hero-feature-bar > div:nth-child(1) .feature-icon::before {
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23000' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M27 5h10l2 8a21 21 0 0 1 5 2l7-4 7 7-4 7a21 21 0 0 1 2 5l8 2v10l-8 2a21 21 0 0 1-2 5l4 7-7 7-7-4a21 21 0 0 1-5 2l-2 8H27l-2-8a21 21 0 0 1-5-2l-7 4-7-7 4-7a21 21 0 0 1-2-5l-8-2V32l8-2a21 21 0 0 1 2-5l-4-7 7-7 7 4a21 21 0 0 1 5-2z'/%3E%3Ccircle cx='32' cy='37' r='10'/%3E%3C/g%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23000' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M27 5h10l2 8a21 21 0 0 1 5 2l7-4 7 7-4 7a21 21 0 0 1 2 5l8 2v10l-8 2a21 21 0 0 1-2 5l4 7-7 7-7-4a21 21 0 0 1-5 2l-2 8H27l-2-8a21 21 0 0 1-5-2l-7 4-7-7 4-7a21 21 0 0 1-2-5l-8-2V32l8-2a21 21 0 0 1 2-5l-4-7 7-7 7 4a21 21 0 0 1 5-2z'/%3E%3Ccircle cx='32' cy='37' r='10'/%3E%3C/g%3E%3C/svg%3E");
-}
-
-.hero-feature-bar > div:nth-child(2) .feature-icon::before {
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23000' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 54V39h10v15M27 54V28h10v26M46 54V16h10v38M6 54h52'/%3E%3Cpath d='m11 28 13-11 10 6L50 8'/%3E%3Cpath d='M42 8h8v8'/%3E%3C/g%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23000' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 54V39h10v15M27 54V28h10v26M46 54V16h10v38M6 54h52'/%3E%3Cpath d='m11 28 13-11 10 6L50 8'/%3E%3Cpath d='M42 8h8v8'/%3E%3C/g%3E%3C/svg%3E");
-}
-
-.hero-feature-bar > div:nth-child(3) .feature-icon::before {
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23000' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M32 5 55 14v15c0 14-8 24-23 30C17 53 9 43 9 29V14z'/%3E%3Cpath d='m20 31 8 8 17-18'/%3E%3C/g%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23000' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M32 5 55 14v15c0 14-8 24-23 30C17 53 9 43 9 29V14z'/%3E%3Cpath d='m20 31 8 8 17-18'/%3E%3C/g%3E%3C/svg%3E");
+  -webkit-mask-image: url("/icon-gear.svg");
+  mask-image: url("/icon-gear.svg");
 }
 
 .hero-feature-bar > div:nth-child(4) .feature-icon::before {
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23000' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 34C8 18 18 8 33 8c12 0 21 6 25 17l-10 1c-7 1-14 3-21 6l-9 4v9c0 7 5 11 12 11h13v-7h10l3-15'/%3E%3Cpath d='M18 36c7 2 14 3 23 3h14M21 49h13'/%3E%3C/g%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23000' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 34C8 18 18 8 33 8c12 0 21 6 25 17l-10 1c-7 1-14 3-21 6l-9 4v9c0 7 5 11 12 11h13v-7h10l3-15'/%3E%3Cpath d='M18 36c7 2 14 3 23 3h14M21 49h13'/%3E%3C/g%3E%3C/svg%3E");
+  -webkit-mask-image: url("/icon-certificate.svg");
+  mask-image: url("/icon-certificate.svg");
 }
 
 @media (max-width: 820px) {
-  .hero-feature-bar .feature-icon::before { width: 44px; height: 44px; }
+  .hero-feature-bar > div:nth-child(1) .feature-icon::before,
+  .hero-feature-bar > div:nth-child(4) .feature-icon::before {
+    width: 38px;
+    height: 38px;
+  }
 }
 
 @media (max-width: 560px) {
-  .hero-feature-bar .feature-icon::before { width: 38px; height: 38px; }
+  .hero-feature-bar > div:nth-child(1) .feature-icon::before,
+  .hero-feature-bar > div:nth-child(4) .feature-icon::before {
+    width: 32px;
+    height: 32px;
+  }
 }
