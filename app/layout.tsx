@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Balance Point Certified",
     description: "Find your balance point. Trust the process.",
-    images: ["/logo.jpg"],
+    images: ["/logo.svg"],
   },
 };
 
