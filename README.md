@@ -4,15 +4,19 @@ A production-oriented Next.js booking site for private motorcycle wheelie traini
 
 ## Booking flow
 
-1. Rider chooses one of four training packages.
-2. Live availability is read from the instructor's Google Calendar.
-3. A selected slot is temporarily held in Google Calendar for 30 minutes.
-4. Rider pays only the $20 reservation deposit through Stripe Checkout.
-5. Stripe webhook confirms the calendar event.
-6. Mailjet sends the immediate transactional confirmation.
-7. Sequenzy receives `booking.confirmed` and can run reminder / nurture sequences.
-8. The deposit-paid booking is POSTed to the Balance Point Certified Sulus CRM location (`blZQxRCCKPDWhePrhcDg`) through its configured intake webhook.
-9. Vercel Cron removes abandoned calendar holds.
+Two payment paths live side by side in the booking section:
+
+**Pay at my session (live now — cash welcome)**
+1. Rider chooses a package on the site.
+2. The embedded Sulus CRM booking widget (`NEXT_PUBLIC_SULUS_BOOKING_URL`, calendar "Training Session") shows live availability — synced with the owner's Google Calendar once he connects it under his Sulus user.
+3. Rider picks the matching service (package), a time, fills the Rider Booking Form (phone required + waiver checkbox) and confirms.
+4. Sulus creates the contact + appointment, sends SMS/email confirmation, 24h and 2h reminders, and runs the **Rider Bookings** pipeline workflows (intake → session completed → certified / no-show).
+
+**Reserve with a $20 deposit online (dormant until Stripe is connected)**
+1. Set `STRIPE_*`, `GOOGLE_*` and `NEXT_PUBLIC_ONLINE_DEPOSIT=true`.
+2. Slot is held in Google Calendar, rider pays the deposit in Stripe Checkout.
+3. Stripe webhook confirms the event, Mailjet + Sequenzy fire, and the booking is POSTed (HMAC-signed) to the Sulus **Website Booking — New Rider Intake** inbound-webhook workflow.
+4. Vercel Cron removes abandoned holds.
 
 ## Packages
 
@@ -60,7 +64,14 @@ Create a webhook in Sequenzy and place the URL in `SEQUENZY_WEBHOOK_URL`. The ap
 
 ## Sulus CRM
 
-The correct Balance Point Certified CRM location is `https://crm.sulus.ai/location/blZQxRCCKPDWhePrhcDg`, so `SULUS_CRM_LOCATION_ID` is set to `blZQxRCCKPDWhePrhcDg`. That browser URL identifies the CRM location but is not itself the POST endpoint. Create an Inbound Webhook / intake endpoint inside that Sulus location and place the generated URL in `SULUS_CRM_WEBHOOK_URL`. The payload contains the location ID, contact details, package, first-session time, $20 deposit paid, remaining balance, balance-collection method, and Stripe session ID. If the endpoint uses bearer authentication, set `SULUS_CRM_WEBHOOK_TOKEN`.
+Location: `https://crm.sulus.ai/location/blZQxRCCKPDWhePrhcDg` (`SULUS_CRM_LOCATION_ID`).
+
+- **Calendar → Training Session** (`/b/training-session`): 60-min slots, Mon–Sat 9–5 PT, 4 priced services matching `lib/packages.ts`, booking form "Rider Booking Form", attendee + owner notifications on.
+- **Pipeline → Rider Bookings**: New Booking → Session Confirmed → In Training → Balance Collected → Package Complete / Certified · Lost / No-Show.
+- **Contact fields**: Training Package, Payment Method, Balance Due, Sessions Completed.
+- **Workflows**: 1. New Booking — Rider Intake · 2. Session Completed — Progress + Next Session · 3. Certified — Package Complete · 4. No-Show — Rebook Nudge · (draft) Website Booking — New Rider Intake (inbound webhook for the Stripe path).
+
+For the Stripe path, `SULUS_CRM_WEBHOOK_URL` is the inbound-webhook Endpoint URL and `SULUS_CRM_WEBHOOK_TOKEN` its Signing Secret; the app signs the raw JSON body as `X-Webhook-Signature: sha256=<hmac>`.
 
 ## Deployment
 

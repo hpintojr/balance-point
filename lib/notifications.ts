@@ -1,4 +1,5 @@
 import Mailjet from "node-mailjet";
+import { createHmac } from "crypto";
 
 export type BookingNotification = {
   email: string;
@@ -68,38 +69,42 @@ export async function triggerSequenzy(data: BookingNotification) {
 }
 
 export async function pushToCRM(data: BookingNotification & { packageId: string; stripeSessionId: string }) {
+  // Sulus CRM "Inbound Webhook" workflow trigger. The workflow expects the raw JSON body to be
+  // signed with HMAC-SHA256 using the workflow's signing secret:  X-Webhook-Signature: sha256=<hex>
   const webhookUrl = process.env.SULUS_CRM_WEBHOOK_URL;
   if (!webhookUrl) return { skipped: true };
 
   const locationId = process.env.SULUS_CRM_LOCATION_ID || "blZQxRCCKPDWhePrhcDg";
-  const token = process.env.SULUS_CRM_WEBHOOK_TOKEN;
-  const response = await fetch(webhookUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  const secret = process.env.SULUS_CRM_WEBHOOK_TOKEN;
+  const body = JSON.stringify({
+    source: "balancepointcertified.com",
+    event: "booking.deposit_paid",
+    locationId,
+    contact: {
+      firstName: data.name.split(" ")[0],
+      lastName: data.name.split(" ").slice(1).join(" "),
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
     },
-    body: JSON.stringify({
-      source: "balancepointcertified.com",
-      event: "booking.deposit_paid",
-      locationId,
-      contact: {
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-      },
-      booking: {
-        packageId: data.packageId,
-        packageName: data.packageName,
-        sessionStart: data.sessionStart,
-        depositPaid: data.amountPaid,
-        remainingBalance: data.remainingBalance,
-        balanceCollection: "owner_direct_cash_welcome",
-        stripeSessionId: data.stripeSessionId,
-      },
-    }),
+    booking: {
+      packageId: data.packageId,
+      packageName: data.packageName,
+      sessionStart: data.sessionStart,
+      depositPaid: data.amountPaid / 100,
+      remainingBalance: data.remainingBalance / 100,
+      paymentMethod: "card_deposit",
+      balanceCollection: "owner_direct_cash_welcome",
+      stripeSessionId: data.stripeSessionId,
+    },
   });
 
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (secret) {
+    headers["X-Webhook-Signature"] = `sha256=${createHmac("sha256", secret).update(body).digest("hex")}`;
+  }
+
+  const response = await fetch(webhookUrl, { method: "POST", headers, body });
   if (!response.ok) throw new Error(`CRM webhook failed: ${response.status}`);
   return { sent: true };
 }

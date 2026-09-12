@@ -27,6 +27,9 @@ export default function Home() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "card">("cash");
+  const onlineDepositEnabled = process.env.NEXT_PUBLIC_ONLINE_DEPOSIT === "true";
+  const bookingWidgetUrl = process.env.NEXT_PUBLIC_SULUS_BOOKING_URL || "https://crm.sulus.ai/b/training-session";
   const selectedPackage = useMemo(() => packages.find((p) => p.id === packageId)!, [packageId]);
 
   async function loadSlots(nextDate: string) {
@@ -160,7 +163,7 @@ export default function Home() {
         <p className="eyebrow">HOW IT WORKS</p>
         <div className="process-grid">
           <div><span>01</span><h3>Choose your level</h3><p>Pick the progression that fits where you are now and where you want to go.</p></div>
-          <div><span>02</span><h3>Reserve your first session</h3><p>Select a live time from the training calendar and lock it in with a $20 deposit. The remaining balance is handled directly with the owner, including cash.</p></div>
+          <div><span>02</span><h3>Reserve your first session</h3><p>Pick a live time on the training calendar. Pay at your session — cash is welcome — or reserve online with a $20 deposit when that option is on.</p></div>
           <div><span>03</span><h3>Train + review</h3><p>Private coaching, technique correction, and video feedback turn each session into the next step.</p></div>
           <div><span>04</span><h3>Earn the standard</h3><p>Certification is awarded when the required riding standards are demonstrated—not simply because sessions were completed.</p></div>
         </div>
@@ -171,7 +174,7 @@ export default function Home() {
           <div className="section-head faq-head"><div><p className="eyebrow">FAQ</p><h2>Before you ride.</h2></div><p>Clear expectations before the first clutch-up.</p></div>
           <div className="faq-grid">
             <article><h3>Is balance point guaranteed in five sessions?</h3><p>No. The five-session Challenge is a structured goal, not a guarantee. Every rider progresses differently.</p></article>
-            <article><h3>How much do I pay online?</h3><p>Only a $20 reservation deposit. The remaining balance is collected directly by the owner, and cash is welcome.</p></article>
+            <article><h3>How do I pay?</h3><p>Book your time online and pay at your session — cash is welcome. An optional $20 online reservation deposit can be added later; the package balance is always settled directly with the owner.</p></article>
             <article><h3>When do I earn certification?</h3><p>Certification is earned when the required riding standards are demonstrated—not simply because a package was completed.</p></article>
           </div>
         </div>
@@ -182,51 +185,76 @@ export default function Home() {
           <div className="booking-copy">
             <p className="eyebrow">LOCK IN YOUR FIRST SESSION</p>
             <h2>Ready to train?</h2>
-            <p>Choose your package, pick an available first-session time, and reserve your spot. A $20 deposit applies toward the package total.</p>
+            <p>Choose your package, pick an available first-session time, and reserve your spot. Pay at your session — cash is welcome.</p>
             <div className="selected-card">
               <span>Selected training</span>
               <strong>{selectedPackage.shortName}</strong>
-              <div><b>${selectedPackage.price}</b> total <i>•</i> ${selectedPackage.deposit} deposit</div>
+              <div><b>${selectedPackage.price}</b> total <i>•</i> {paymentMethod === "card" ? `$${selectedPackage.deposit} deposit online` : "pay at session"}</div>
             </div>
             <div className="safety-note"><strong>Progression over pressure.</strong><br/>Riding skill develops differently for every person. Balance Point Certified does not guarantee that a rider will reach balance point within a specific number of sessions.</div>
           </div>
 
-          <form className="booking-form" onSubmit={handleBooking}>
+          <div className="booking-form">
             <label>
               Training package
               <select value={packageId} onChange={(e) => setPackageId(e.target.value)}>
                 {packages.map((pkg) => <option value={pkg.id} key={pkg.id}>{pkg.name} — ${pkg.price}</option>)}
               </select>
             </label>
-            <div className="field-row">
-              <label>Full name<input name="name" required autoComplete="name" placeholder="Rider name" /></label>
-              <label>Phone<input name="phone" required autoComplete="tel" placeholder="(555) 555-5555" /></label>
-            </div>
-            <label>Email<input type="email" name="email" required autoComplete="email" placeholder="you@example.com" /></label>
-            <label>Choose a date<input type="date" value={date} onChange={(e) => loadSlots(e.target.value)} required /></label>
-
-            <div className="time-field">
-              <span className="field-label">Available first-session times</span>
-              {loadingSlots && <p className="muted">Checking the training calendar…</p>}
-              {!loadingSlots && date && slots.length === 0 && <p className="muted">No open times on this date. Try another day.</p>}
-              <div className="slot-grid">
-                {slots.map((slot) => (
-                  <button type="button" key={slot.start} className={sessionStart === slot.start ? "slot active" : "slot"} onClick={() => setSessionStart(slot.start)}>{slot.label}</button>
-                ))}
-              </div>
-            </div>
 
             <fieldset>
-              <legend>Reservation deposit</legend>
-              <div className="choice static-choice"><span><strong>Pay ${selectedPackage.deposit} today</strong><small>Remaining ${selectedPackage.price - selectedPackage.deposit} is collected directly by Balance Point Certified. Cash is welcome.</small></span></div>
+              <legend>How would you like to pay?</legend>
+              <label className="choice">
+                <input type="radio" name="payment" value="cash" checked={paymentMethod === "cash"} onChange={() => setPaymentMethod("cash")} />
+                <span><strong>Pay at my session</strong><small>Book your time now, pay ${selectedPackage.price} in person. Cash is welcome.</small></span>
+              </label>
+              <label className={`choice ${onlineDepositEnabled ? "" : "choice-disabled"}`}>
+                <input type="radio" name="payment" value="card" disabled={!onlineDepositEnabled} checked={paymentMethod === "card"} onChange={() => setPaymentMethod("card")} />
+                <span><strong>Reserve with a ${selectedPackage.deposit} deposit online{onlineDepositEnabled ? "" : " — coming soon"}</strong><small>Card via secure checkout. Remaining ${selectedPackage.price - selectedPackage.deposit} is collected directly by Balance Point Certified.</small></span>
+              </label>
             </fieldset>
 
-            <label className="waiver"><input type="checkbox" name="waiver" required /><span>I understand motorcycle stunt training involves inherent risk, I will follow instructor safety directions, and a full training waiver may be required before riding.</span></label>
+            {paymentMethod === "cash" ? (
+              <div className="widget-wrap">
+                <p className="field-label">Pick <strong>{selectedPackage.name}</strong> in the calendar, choose your first-session time, and confirm. You&apos;ll get a text + email confirmation and reminders before you ride.</p>
+                <iframe
+                  key={bookingWidgetUrl}
+                  src={`${bookingWidgetUrl}?embed=true`}
+                  title="Book your Balance Point Certified training session"
+                  className="booking-widget"
+                  loading="lazy"
+                  allow="clipboard-write"
+                />
+                <p className="microcopy">Nothing is charged online. Your session is confirmed once you tap “Confirm Booking”; the package balance is paid at your session.</p>
+              </div>
+            ) : (
+              <form onSubmit={handleBooking}>
+                <div className="field-row">
+                  <label>Full name<input name="name" required autoComplete="name" placeholder="Rider name" /></label>
+                  <label>Phone<input name="phone" required autoComplete="tel" placeholder="(555) 555-5555" /></label>
+                </div>
+                <label>Email<input type="email" name="email" required autoComplete="email" placeholder="you@example.com" /></label>
+                <label>Choose a date<input type="date" value={date} onChange={(e) => loadSlots(e.target.value)} required /></label>
 
-            {error && <div className="form-error">{error}</div>}
-            <button className="button primary submit" disabled={submitting}>{submitting ? "Opening secure checkout…" : "Continue to secure payment"}</button>
-            <p className="microcopy">Only the $20 reservation deposit is processed online through Stripe. Your selected calendar time is held briefly while you complete checkout; the remaining balance is handled directly with the owner.</p>
-          </form>
+                <div className="time-field">
+                  <span className="field-label">Available first-session times</span>
+                  {loadingSlots && <p className="muted">Checking the training calendar…</p>}
+                  {!loadingSlots && date && slots.length === 0 && <p className="muted">No open times on this date. Try another day.</p>}
+                  <div className="slot-grid">
+                    {slots.map((slot) => (
+                      <button type="button" key={slot.start} className={sessionStart === slot.start ? "slot active" : "slot"} onClick={() => setSessionStart(slot.start)}>{slot.label}</button>
+                    ))}
+                  </div>
+                </div>
+
+                <label className="waiver"><input type="checkbox" name="waiver" required /><span>I understand motorcycle stunt training involves inherent risk, I will follow instructor safety directions, and a full training waiver may be required before riding.</span></label>
+
+                {error && <div className="form-error">{error}</div>}
+                <button className="button primary submit" disabled={submitting}>{submitting ? "Opening secure checkout…" : `Continue to secure payment — $${selectedPackage.deposit}`}</button>
+                <p className="microcopy">Only the ${selectedPackage.deposit} reservation deposit is processed online through Stripe. Your selected calendar time is held briefly while you complete checkout; the remaining balance is handled directly with the owner.</p>
+              </form>
+            )}
+          </div>
         </div>
       </section>
 
