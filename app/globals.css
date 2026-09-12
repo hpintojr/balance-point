@@ -147,6 +147,10 @@ legend { color: #d8dee8; padding: 0 8px; font-size: 12px; font-weight: 800; }
 .form-error { margin-bottom: 14px; background: rgba(255,72,72,.08); border: 1px solid rgba(255,72,72,.24); color: #ffaaa8; padding: 12px 14px; border-radius: 10px; font-size: 13px; }
 .submit { width: 100%; border: 0; }
 .submit:disabled { opacity: .55; cursor: wait; }
+.choice-disabled { opacity: .45; cursor: not-allowed; }
+.widget-wrap { display: grid; gap: 12px; }
+.widget-wrap .field-label { font-weight: 500; color: #b9c2d0; line-height: 1.5; }
+.booking-widget { width: 100%; min-height: 720px; border: 0; border-radius: 16px; background: #fff; }
 .microcopy { text-align: center; color: #778191; font-size: 11px; line-height: 1.5; }
 
 footer { padding: 58px 0 34px; border-top: 1px solid var(--line); }
