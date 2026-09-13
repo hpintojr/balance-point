@@ -166,13 +166,27 @@ input:focus,select:focus { border-color: rgba(39,199,255,.65); box-shadow: 0 0 0
 .pay-option-copy small { color: #8d97a6; font-weight: 500; line-height: 1.4; }
 
 /* Embedded calendar frame */
-.widget-frame { border-radius: 18px; overflow: hidden; background: #fff; border: 1px solid rgba(255,255,255,.14); box-shadow: 0 20px 46px rgba(0,0,0,.38); }
+.widget-frame { border-radius: 18px; overflow: hidden; background: #0b1019; border: 1px solid rgba(255,255,255,.14); box-shadow: 0 20px 46px rgba(0,0,0,.38); transition: border-color .2s ease, box-shadow .2s ease; }
+.widget-frame:hover, .widget-frame:focus-within { border-color: rgba(39,199,255,.45); box-shadow: 0 20px 46px rgba(0,0,0,.42), 0 0 0 1px rgba(39,199,255,.18), 0 0 32px rgba(39,199,255,.12); }
 .widget-frame-bar { display: flex; align-items: center; gap: 6px; padding: 12px 14px; background: linear-gradient(90deg,#0d1220,#141b2c); border-bottom: 1px solid rgba(255,255,255,.08); }
-.widget-frame-bar span { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,.16); }
+.widget-frame-bar span { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,.16); transition: background .2s ease; }
 .widget-frame-bar span:nth-child(1) { background: #ff5f57; }
 .widget-frame-bar span:nth-child(2) { background: #febc2e; }
 .widget-frame-bar span:nth-child(3) { background: #28c840; }
-.booking-widget { width: 100%; min-height: 700px; border: 0; display: block; }
+.widget-frame:hover .widget-frame-bar span:nth-child(1) { box-shadow: 0 0 8px rgba(255,95,87,.7); }
+.widget-frame:hover .widget-frame-bar span:nth-child(2) { box-shadow: 0 0 8px rgba(254,188,46,.7); }
+.widget-frame:hover .widget-frame-bar span:nth-child(3) { box-shadow: 0 0 8px rgba(40,200,64,.7); }
+.booking-widget {
+  width: 100%;
+  min-height: 700px;
+  border: 0;
+  display: block;
+  background: #0b1019;
+  /* The calendar itself is a light-theme widget we don't control (cross-origin);
+     invert + hue-rotate flips it to match the site's dark theme while keeping
+     its accent colors close to true, including its own internal hover states. */
+  filter: invert(1) hue-rotate(180deg) contrast(0.92) brightness(0.92);
+}
 
 footer { padding: 58px 0 34px; border-top: 1px solid var(--line); }
 .footer-grid { display: flex; justify-content: space-between; align-items: flex-start; gap: 30px; }
