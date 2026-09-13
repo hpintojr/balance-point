@@ -35,6 +35,8 @@ export async function POST(request: Request) {
         .setZone(timezone)
         .toFormat("cccc, LLLL d 'at' h:mm a ZZZZ");
 
+      const bikeChoice: "own" | "trainer" = md.bikeChoice === "trainer" ? "trainer" : "own";
+
       await confirmHoldEvent({
         eventId: md.holdEventId,
         packageName: pkg.name,
@@ -42,6 +44,10 @@ export async function POST(request: Request) {
         customerEmail: md.customerEmail,
         customerPhone: md.customerPhone,
         amountPaid,
+        bikeChoice,
+        motorcycleYear: md.motorcycleYear,
+        motorcycleMake: md.motorcycleMake,
+        motorcycleModel: md.motorcycleModel,
       });
 
       const notification = {
@@ -52,6 +58,10 @@ export async function POST(request: Request) {
         sessionStart: sessionStartFormatted,
         amountPaid,
         remainingBalance,
+        bikeChoice,
+        motorcycleYear: md.motorcycleYear,
+        motorcycleMake: md.motorcycleMake,
+        motorcycleModel: md.motorcycleModel,
       };
 
       const results = await Promise.allSettled([
@@ -61,6 +71,7 @@ export async function POST(request: Request) {
           ...notification,
           packageId: pkg.id,
           stripeSessionId: session.id,
+          paymentMethod: "card_deposit",
         }),
       ]);
 

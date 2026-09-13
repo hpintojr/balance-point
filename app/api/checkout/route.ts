@@ -23,9 +23,17 @@ export async function POST(request: Request) {
     const phone = String(body.phone || "").trim();
     const sessionStart = String(body.sessionStart || "");
     const waiverAccepted = body.waiverAccepted === true;
+    const bikeChoice = body.bikeChoice === "trainer" ? "trainer" : "own";
+    const motorcycleYear = String(body.motorcycleYear || "").trim();
+    const motorcycleMake = String(body.motorcycleMake || "").trim();
+    const motorcycleModel = String(body.motorcycleModel || "").trim();
 
     if (!name || !email || !phone || !sessionStart || !waiverAccepted) {
       return NextResponse.json({ error: "Complete all required booking fields." }, { status: 400 });
+    }
+
+    if (bikeChoice === "own" && (!motorcycleYear || !motorcycleMake || !motorcycleModel)) {
+      return NextResponse.json({ error: "Add your motorcycle's year, make, and model." }, { status: 400 });
     }
 
     const slot = DateTime.fromISO(sessionStart, { setZone: true });
@@ -33,12 +41,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Please choose a valid future time." }, { status: 400 });
     }
 
-    if (!(await isSlotAvailable(sessionStart))) {
+    if (!(await isSlotAvailable(sessionStart, pkg.durationMinutes))) {
       return NextResponse.json({ error: "That time was just booked. Please choose another slot." }, { status: 409 });
     }
 
     holdEventId = await createHoldEvent({
       startISO: sessionStart,
+      durationMinutes: pkg.durationMinutes,
       packageId: pkg.id,
       customerName: name,
       customerEmail: email,
@@ -75,6 +84,10 @@ export async function POST(request: Request) {
         customerPhone: phone,
         paymentMode: "deposit",
         totalPackagePrice: String(pkg.price * 100),
+        bikeChoice,
+        motorcycleYear,
+        motorcycleMake,
+        motorcycleModel,
       },
       success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?booking=cancelled#book`,

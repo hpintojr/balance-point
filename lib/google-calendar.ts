@@ -42,10 +42,10 @@ export async function isSlotAvailable(startISO: string, durationMinutes = 60) {
   return busy.length === 0;
 }
 
-export async function getAvailableSlots(date: string) {
+export async function getAvailableSlots(date: string, durationMinutes?: number) {
   const startHour = Number(process.env.BOOKING_START_HOUR || 9);
   const endHour = Number(process.env.BOOKING_END_HOUR || 17);
-  const slotMinutes = Number(process.env.BOOKING_SLOT_MINUTES || 60);
+  const slotMinutes = durationMinutes && durationMinutes > 0 ? durationMinutes : Number(process.env.BOOKING_SLOT_MINUTES || 60);
   const selectedDate = DateTime.fromISO(date, { zone: timezone });
 
   if (!selectedDate.isValid) return [];
@@ -129,10 +129,20 @@ export async function confirmHoldEvent(args: {
   customerEmail: string;
   customerPhone: string;
   amountPaid: number;
+  bikeChoice?: "own" | "trainer";
+  motorcycleYear?: string;
+  motorcycleMake?: string;
+  motorcycleModel?: string;
 }) {
   const calendar = getCalendar();
   const existing = await calendar.events.get({ calendarId: calendarId!, eventId: args.eventId });
   const privateProps = existing.data.extendedProperties?.private || {};
+
+  const bikeLine = args.bikeChoice === "trainer"
+    ? "Bike: School's trainer bike (R3)"
+    : args.bikeChoice === "own"
+      ? `Bike: Own motorcycle — ${[args.motorcycleYear, args.motorcycleMake, args.motorcycleModel].filter(Boolean).join(" ") || "details not provided"}`
+      : null;
 
   await calendar.events.patch({
     calendarId: calendarId!,
@@ -146,6 +156,7 @@ export async function confirmHoldEvent(args: {
         `Email: ${args.customerEmail}`,
         `Phone: ${args.customerPhone}`,
         `Paid today: $${(args.amountPaid / 100).toFixed(2)}`,
+        ...(bikeLine ? [bikeLine] : []),
       ].join("\n"),
       extendedProperties: {
         private: {

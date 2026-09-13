@@ -1,6 +1,8 @@
 import Mailjet from "node-mailjet";
 import { createHmac } from "crypto";
 
+export type BikeChoice = "own" | "trainer";
+
 export type BookingNotification = {
   email: string;
   name: string;
@@ -9,6 +11,10 @@ export type BookingNotification = {
   sessionStart: string;
   amountPaid: number;
   remainingBalance: number;
+  bikeChoice: BikeChoice;
+  motorcycleYear?: string;
+  motorcycleMake?: string;
+  motorcycleModel?: string;
 };
 
 export async function sendMailjetConfirmation(data: BookingNotification) {
@@ -68,7 +74,9 @@ export async function triggerSequenzy(data: BookingNotification) {
   return { sent: true };
 }
 
-export async function pushToCRM(data: BookingNotification & { packageId: string; stripeSessionId: string }) {
+export async function pushToCRM(
+  data: BookingNotification & { packageId: string; stripeSessionId?: string; paymentMethod: "card_deposit" | "cash" },
+) {
   // Sulus CRM "Inbound Webhook" workflow trigger. The workflow expects the raw JSON body to be
   // signed with HMAC-SHA256 using the workflow's signing secret:  X-Webhook-Signature: sha256=<hex>
   const webhookUrl = process.env.SULUS_CRM_WEBHOOK_URL;
@@ -78,7 +86,7 @@ export async function pushToCRM(data: BookingNotification & { packageId: string;
   const secret = process.env.SULUS_CRM_WEBHOOK_TOKEN;
   const body = JSON.stringify({
     source: "balancepointcertified.com",
-    event: "booking.deposit_paid",
+    event: data.paymentMethod === "card_deposit" ? "booking.deposit_paid" : "booking.reserved_cash",
     locationId,
     contact: {
       firstName: data.name.split(" ")[0],
@@ -86,6 +94,9 @@ export async function pushToCRM(data: BookingNotification & { packageId: string;
       name: data.name,
       email: data.email,
       phone: data.phone,
+      motorcycle_year: data.bikeChoice === "own" ? data.motorcycleYear || "" : "",
+      motorcycle_make: data.bikeChoice === "own" ? data.motorcycleMake || "" : "",
+      motorcycle_model: data.bikeChoice === "own" ? data.motorcycleModel || "" : "",
     },
     booking: {
       packageId: data.packageId,
@@ -93,9 +104,11 @@ export async function pushToCRM(data: BookingNotification & { packageId: string;
       sessionStart: data.sessionStart,
       depositPaid: data.amountPaid / 100,
       remainingBalance: data.remainingBalance / 100,
-      paymentMethod: "card_deposit",
+      paymentMethod: data.paymentMethod,
       balanceCollection: "owner_direct_cash_welcome",
-      stripeSessionId: data.stripeSessionId,
+      stripeSessionId: data.stripeSessionId || null,
+      bikeChoice: data.bikeChoice,
+      usingSchoolTrainerBike: data.bikeChoice === "trainer",
     },
   });
 
