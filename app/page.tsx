@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useMemo, useRef, useState } from "react";
 import { packages } from "@/lib/packages";
 
 type Slot = { start: string; label: string };
@@ -28,6 +28,7 @@ export default function Home() {
   const [error, setError] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "card">("cash");
+  const bookingIframeRef = useRef<HTMLIFrameElement>(null);
   const onlineDepositEnabled = process.env.NEXT_PUBLIC_ONLINE_DEPOSIT === "true";
   const bookingWidgetUrl = process.env.NEXT_PUBLIC_SULUS_BOOKING_URL || "https://crm.sulus.ai/b/training-session";
   const selectedPackage = useMemo(() => packages.find((p) => p.id === packageId)!, [packageId]);
@@ -232,10 +233,14 @@ export default function Home() {
                   <>
                     <span className="step-label">Pick your package and first-session time</span>
                     <p className="widget-intro">Choose a package below, pick an open slot, and confirm. You&apos;ll get a text + email confirmation and reminders before you ride.</p>
-                    <div className="widget-frame">
+                    <div
+                      className="widget-frame"
+                      onMouseEnter={() => bookingIframeRef.current?.focus()}
+                    >
                       <div className="widget-frame-bar"><span/><span/><span/></div>
                       <iframe
                         key={bookingWidgetUrl}
+                        ref={bookingIframeRef}
                         src={`${bookingWidgetUrl}?embed=true`}
                         title="Book your Balance Point Certified training session"
                         className="booking-widget"
