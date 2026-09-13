@@ -185,12 +185,14 @@ export default function Home() {
           <div className="booking-copy">
             <p className="eyebrow">LOCK IN YOUR FIRST SESSION</p>
             <h2>Ready to train?</h2>
-            <p>Choose your package, pick an available first-session time, and reserve your spot. Pay at your session — cash is welcome.</p>
-            <div className="selected-card">
-              <span>Selected training</span>
-              <strong>{selectedPackage.shortName}</strong>
-              <div><b>${selectedPackage.price}</b> total <i>•</i> {paymentMethod === "card" ? `$${selectedPackage.deposit} deposit online` : "pay at session"}</div>
-            </div>
+            <p>Pay at your session — cash is welcome — pick your package and first-session time right in the calendar below.</p>
+            {paymentMethod === "card" && (
+              <div className="selected-card">
+                <span>Selected training</span>
+                <strong>{selectedPackage.shortName}</strong>
+                <div><b>${selectedPackage.price}</b> total <i>•</i> ${selectedPackage.deposit} deposit online</div>
+              </div>
+            )}
             <div className="safety-note"><strong>Progression over pressure.</strong><br/>Riding skill develops differently for every person. Balance Point Certified does not guarantee that a rider will reach balance point within a specific number of sessions.</div>
           </div>
 
@@ -198,25 +200,13 @@ export default function Home() {
             <div className="booking-step">
               <span className="step-index">01</span>
               <div className="step-body">
-                <label className="step-label">
-                  Training package
-                  <select value={packageId} onChange={(e) => setPackageId(e.target.value)}>
-                    {packages.map((pkg) => <option value={pkg.id} key={pkg.id}>{pkg.name} — ${pkg.price}</option>)}
-                  </select>
-                </label>
-              </div>
-            </div>
-
-            <div className="booking-step">
-              <span className="step-index">02</span>
-              <div className="step-body">
                 <span className="step-label">How would you like to pay?</span>
                 <div className="pay-options">
                   <button type="button" className={`pay-option ${paymentMethod === "cash" ? "active" : ""}`} onClick={() => setPaymentMethod("cash")}>
                     <span className="pay-option-icon">$</span>
                     <span className="pay-option-copy">
                       <strong>Pay at my session</strong>
-                      <small>Book now, pay ${selectedPackage.price} in person. Cash is welcome.</small>
+                      <small>Pick any package below, book now, pay in person. Cash is welcome.</small>
                     </span>
                   </button>
                   <button
@@ -227,8 +217,8 @@ export default function Home() {
                   >
                     <span className="pay-option-icon card">▢</span>
                     <span className="pay-option-copy">
-                      <strong>Reserve with a ${selectedPackage.deposit} deposit{onlineDepositEnabled ? "" : " — coming soon"}</strong>
-                      <small>Card via secure checkout. Remaining ${selectedPackage.price - selectedPackage.deposit} collected directly by Balance Point Certified.</small>
+                      <strong>Reserve with a deposit online{onlineDepositEnabled ? "" : " — coming soon"}</strong>
+                      <small>Card via secure checkout. The remaining balance is collected directly by Balance Point Certified.</small>
                     </span>
                   </button>
                 </div>
@@ -236,12 +226,12 @@ export default function Home() {
             </div>
 
             <div className="booking-step booking-step-last">
-              <span className="step-index">03</span>
+              <span className="step-index">02</span>
               <div className="step-body">
                 {paymentMethod === "cash" ? (
                   <>
-                    <span className="step-label">Pick your first-session time</span>
-                    <p className="widget-intro">Choose <strong>{selectedPackage.name}</strong> below, pick an open slot, and confirm. You&apos;ll get a text + email confirmation and reminders before you ride.</p>
+                    <span className="step-label">Pick your package and first-session time</span>
+                    <p className="widget-intro">Choose a package below, pick an open slot, and confirm. You&apos;ll get a text + email confirmation and reminders before you ride.</p>
                     <div className="widget-frame">
                       <div className="widget-frame-bar"><span/><span/><span/></div>
                       <iframe
@@ -257,7 +247,13 @@ export default function Home() {
                   </>
                 ) : (
                   <form onSubmit={handleBooking}>
-                    <span className="step-label">Your details</span>
+                    <span className="step-label">Package and details</span>
+                    <label>
+                      Training package
+                      <select value={packageId} onChange={(e) => setPackageId(e.target.value)}>
+                        {packages.map((pkg) => <option value={pkg.id} key={pkg.id}>{pkg.name} — ${pkg.price}</option>)}
+                      </select>
+                    </label>
                     <div className="field-row">
                       <label>Full name<input name="name" required autoComplete="name" placeholder="Rider name" /></label>
                       <label>Phone<input name="phone" required autoComplete="tel" placeholder="(555) 555-5555" /></label>
