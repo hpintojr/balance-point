@@ -181,10 +181,11 @@ input:focus,select:focus { border-color: rgba(39,199,255,.65); box-shadow: 0 0 0
   min-height: 700px;
   border: 0;
   display: block;
-  background: #0b1019;
-  /* The calendar itself is a light-theme widget we don't control (cross-origin);
-     invert + hue-rotate flips it to match the site's dark theme while keeping
-     its accent colors close to true, including its own internal hover states. */
+  /* No background here on purpose: this element sits inside the filter below, so any
+     background color we set here gets inverted too and shows up as a mismatched light
+     patch wherever the widget's own content doesn't fill the full height. Letting the
+     widget's native white page background show through means it inverts to near-black
+     along with everything else, so it blends with the frame instead of standing out. */
   filter: invert(1) hue-rotate(180deg) contrast(0.92) brightness(0.92);
 }
 

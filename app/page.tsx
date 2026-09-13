@@ -233,10 +233,7 @@ export default function Home() {
                   <>
                     <span className="step-label">Pick your package and first-session time</span>
                     <p className="widget-intro">Choose a package below, pick an open slot, and confirm. You&apos;ll get a text + email confirmation and reminders before you ride.</p>
-                    <div
-                      className="widget-frame"
-                      onMouseEnter={() => bookingIframeRef.current?.focus()}
-                    >
+                    <div className="widget-frame">
                       <div className="widget-frame-bar"><span/><span/><span/></div>
                       <iframe
                         key={bookingWidgetUrl}
@@ -246,6 +243,12 @@ export default function Home() {
                         className="booking-widget"
                         loading="lazy"
                         allow="clipboard-write"
+                        onLoad={() => {
+                          // Give the calendar focus once, right after it loads, so the very
+                          // first real click on a package registers instead of just
+                          // shifting focus into the iframe (a common cross-origin iframe quirk).
+                          requestAnimationFrame(() => bookingIframeRef.current?.focus());
+                        }}
                       />
                     </div>
                     <p className="microcopy">Nothing is charged online. Your session is confirmed once you tap “Confirm Booking”; the package balance is paid at your session.</p>
