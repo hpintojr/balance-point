@@ -3,6 +3,7 @@ export type TrainingPackage = {
   name: string;
   shortName: string;
   sessions: number;
+  durationMinutes: number;
   price: number;
   deposit: number;
   featured?: boolean;
@@ -13,49 +14,41 @@ export type TrainingPackage = {
 
 export const packages: TrainingPackage[] = [
   {
-    id: "first-clutch-up",
-    name: "First Clutch-Up",
-    shortName: "First Clutch-Up",
+    id: "standard-private-lesson",
+    name: "1hr Standard Private Lesson",
+    shortName: "Standard Private Lesson",
     sessions: 1,
-    price: 120,
-    deposit: 20,
-    eyebrow: "LEVEL 01",
-    description: "A private fundamentals session built around safe, repeatable clutch-up technique.",
-    bullets: ["1 private session", "Fundamentals", "Clutch-up technique", "Rear-brake introduction"],
-  },
-  {
-    id: "bp-starter",
-    name: "BP Starter — 3 Sessions",
-    shortName: "BP Starter",
-    sessions: 3,
-    price: 325,
-    deposit: 20,
-    eyebrow: "LEVEL 02",
-    description: "Progressive one-on-one coaching with video feedback so each session builds on the last.",
-    bullets: ["3 private sessions", "Progressive training", "Video review", "Technique refinement"],
-  },
-  {
-    id: "balance-point-challenge",
-    name: "Balance Point Challenge — 5 Sessions",
-    shortName: "Balance Point Challenge",
-    sessions: 5,
-    price: 500,
+    durationMinutes: 60,
+    price: 170,
     deposit: 20,
     featured: true,
-    eyebrow: "THE CHALLENGE",
-    description: "Five sessions. One goal. Find your balance point. Trust the process.",
-    bullets: ["5 private sessions", "Full progression", "Technique correction", "Video review", "BPC certificate when standards are met"],
+    eyebrow: "MOST BOOKED",
+    description: "One hour of one-on-one coaching. Ride the school's R3 trainer bike or your own motorcycle — your choice at booking.",
+    bullets: ["60-minute private session", "Use the school's R3 or your own bike", "Clutch-up, rear-brake, balance-point coaching", "Video feedback"],
   },
   {
-    id: "bpc-complete",
-    name: "BPC Complete — 8 Sessions",
-    shortName: "BPC Complete",
-    sessions: 8,
-    price: 750,
+    id: "personal-bike-express",
+    name: "1hr Personal-Bike Express Session",
+    shortName: "Personal-Bike Express Session",
+    sessions: 1,
+    durationMinutes: 60,
+    price: 120,
     deposit: 20,
-    eyebrow: "LEVEL 04",
-    description: "The full progression track from balance-point development into consistency, brake control, and longer controlled wheelies.",
-    bullets: ["8 private sessions", "Balance point → consistency", "Brake control", "Longer controlled wheelies", "Advanced technique"],
+    eyebrow: "BRING YOUR OWN BIKE",
+    description: "A focused one-hour session on your own motorcycle — a lower rate since you're supplying the bike.",
+    bullets: ["60-minute private session", "Ride your own motorcycle", "Same one-on-one coaching", "Best rate for riders who already own a bike"],
+  },
+  {
+    id: "extended-personal-bike-session",
+    name: "2.5hr Extended Personal-Bike Session",
+    shortName: "Extended Personal-Bike Session",
+    sessions: 1,
+    durationMinutes: 150,
+    price: 250,
+    deposit: 20,
+    eyebrow: "GO DEEPER",
+    description: "Two and a half hours of extended coaching time on your own motorcycle for riders ready to put in extra reps.",
+    bullets: ["150-minute private session", "Ride your own motorcycle", "Extended reps and correction time", "Most coaching time per session"],
   },
 ];
 
