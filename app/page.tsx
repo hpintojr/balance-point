@@ -1,9 +1,10 @@
 "use client";
 
-import { FormEvent, useMemo, useRef, useState } from "react";
-import { packages } from "@/lib/packages";
+import { FormEvent, useMemo, useState } from "react";
+import { getPackage, packages } from "@/lib/packages";
 
 type Slot = { start: string; label: string };
+type BikeChoice = "own" | "trainer";
 
 function FeatureIcon({ type }: { type: "skills" | "progress" | "coach" | "cert" }) {
   if (type === "skills") {
@@ -19,7 +20,7 @@ function FeatureIcon({ type }: { type: "skills" | "progress" | "coach" | "cert" 
 }
 
 export default function Home() {
-  const [packageId, setPackageId] = useState("balance-point-challenge");
+  const [packageId, setPackageId] = useState("standard-private-lesson");
   const [date, setDate] = useState("");
   const [slots, setSlots] = useState<Slot[]>([]);
   const [sessionStart, setSessionStart] = useState("");
@@ -28,12 +29,14 @@ export default function Home() {
   const [error, setError] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "card">("cash");
-  const bookingIframeRef = useRef<HTMLIFrameElement>(null);
+  const [bikeChoice, setBikeChoice] = useState<BikeChoice>("own");
+  const [motoYear, setMotoYear] = useState("");
+  const [motoMake, setMotoMake] = useState("");
+  const [motoModel, setMotoModel] = useState("");
   const onlineDepositEnabled = process.env.NEXT_PUBLIC_ONLINE_DEPOSIT === "true";
-  const bookingWidgetUrl = process.env.NEXT_PUBLIC_SULUS_BOOKING_URL || "https://crm.sulus.ai/b/training-session";
   const selectedPackage = useMemo(() => packages.find((p) => p.id === packageId)!, [packageId]);
 
-  async function loadSlots(nextDate: string) {
+  async function loadSlots(nextDate: string, pkgIdOverride?: string) {
     setDate(nextDate);
     setSessionStart("");
     setSlots([]);
@@ -41,7 +44,10 @@ export default function Home() {
     if (!nextDate) return;
     setLoadingSlots(true);
     try {
-      const response = await fetch(`/api/availability?date=${encodeURIComponent(nextDate)}`);
+      const activePkg = getPackage(pkgIdOverride ?? packageId) ?? selectedPackage;
+      const response = await fetch(
+        `/api/availability?date=${encodeURIComponent(nextDate)}&durationMinutes=${activePkg.durationMinutes}`,
+      );
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Could not load availability.");
       setSlots(data.slots || []);
@@ -52,6 +58,11 @@ export default function Home() {
     }
   }
 
+  function handlePackageChange(nextPackageId: string) {
+    setPackageId(nextPackageId);
+    if (date) void loadSlots(date, nextPackageId);
+  }
+
   async function handleBooking(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
@@ -59,10 +70,15 @@ export default function Home() {
       setError("Choose an available first-session time.");
       return;
     }
+    if (bikeChoice === "own" && (!motoYear.trim() || !motoMake.trim() || !motoModel.trim())) {
+      setError("Add your motorcycle's year, make, and model — or choose the school's trainer bike.");
+      return;
+    }
     const form = new FormData(event.currentTarget);
     setSubmitting(true);
     try {
-      const response = await fetch("/api/checkout", {
+      const endpoint = paymentMethod === "card" ? "/api/checkout" : "/api/book-cash";
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -72,6 +88,10 @@ export default function Home() {
           email: form.get("email"),
           phone: form.get("phone"),
           waiverAccepted: form.get("waiver") === "on",
+          bikeChoice,
+          motorcycleYear: motoYear,
+          motorcycleMake: motoMake,
+          motorcycleModel: motoModel,
         }),
       });
       const data = await response.json();
@@ -140,7 +160,7 @@ export default function Home() {
         <div className="shell">
           <div className="section-head">
             <div><p className="eyebrow">CHOOSE YOUR PROGRESSION</p><h2>Stop buying “an hour.”<br/>Start building a skill.</h2></div>
-            <p>Each package is a level of progression. Your first session is booked online, then the remaining sessions are scheduled around your development and training plan.</p>
+            <p>Each session is booked online. Choose your own motorcycle or the school's R3 trainer bike when you book — the price is the same either way.</p>
           </div>
           <div className="package-grid">
             {packages.map((pkg) => (
@@ -149,10 +169,10 @@ export default function Home() {
                 <p className="eyebrow">{pkg.eyebrow}</p>
                 <h3>{pkg.shortName}</h3>
                 <p className="card-description">{pkg.description}</p>
-                <div className="price"><span>$</span>{pkg.price}<small> package</small></div>
+                <div className="price"><span>$</span>{pkg.price}<small> / {pkg.durationMinutes} min</small></div>
                 <ul>{pkg.bullets.map((bullet) => <li key={bullet}><span>✓</span>{bullet}</li>)}</ul>
-                <button className="button card-button" onClick={() => { setPackageId(pkg.id); document.getElementById("book")?.scrollIntoView({ behavior: "smooth" }); }}>
-                  Choose {pkg.sessions === 1 ? "session" : `${pkg.sessions} sessions`}
+                <button className="button card-button" onClick={() => { handlePackageChange(pkg.id); document.getElementById("book")?.scrollIntoView({ behavior: "smooth" }); }}>
+                  Book this session
                 </button>
               </article>
             ))}
@@ -163,8 +183,8 @@ export default function Home() {
       <section className="process shell" id="how-it-works">
         <p className="eyebrow">HOW IT WORKS</p>
         <div className="process-grid">
-          <div><span>01</span><h3>Choose your level</h3><p>Pick the progression that fits where you are now and where you want to go.</p></div>
-          <div><span>02</span><h3>Reserve your first session</h3><p>Pick a live time on the training calendar. Pay at your session — cash is welcome — or reserve online with a $20 deposit when that option is on.</p></div>
+          <div><span>01</span><h3>Choose your session</h3><p>Pick the session length and price that fits where you are now and where you want to go.</p></div>
+          <div><span>02</span><h3>Reserve your time</h3><p>Pick a live time on the training calendar, tell us which bike you're riding, and book. Pay at your session — cash is welcome — or reserve online with a $20 deposit when that option is on.</p></div>
           <div><span>03</span><h3>Train + review</h3><p>Private coaching, technique correction, and video feedback turn each session into the next step.</p></div>
           <div><span>04</span><h3>Earn the standard</h3><p>Certification is awarded when the required riding standards are demonstrated—not simply because sessions were completed.</p></div>
         </div>
@@ -175,8 +195,8 @@ export default function Home() {
           <div className="section-head faq-head"><div><p className="eyebrow">FAQ</p><h2>Before you ride.</h2></div><p>Clear expectations before the first clutch-up.</p></div>
           <div className="faq-grid">
             <article><h3>Is balance point guaranteed in five sessions?</h3><p>No. The five-session Challenge is a structured goal, not a guarantee. Every rider progresses differently.</p></article>
+            <article><h3>Can I use the school's bike?</h3><p>Yes. When you book, choose the school's R3 trainer bike or your own motorcycle. The session price stays the same either way; because the trainer bike is shared, your actual seat time on it is shorter than the full session.</p></article>
             <article><h3>How do I pay?</h3><p>Book your time online and pay at your session — cash is welcome. An optional $20 online reservation deposit can be added later; the package balance is always settled directly with the owner.</p></article>
-            <article><h3>When do I earn certification?</h3><p>Certification is earned when the required riding standards are demonstrated—not simply because a package was completed.</p></article>
           </div>
         </div>
       </section>
@@ -184,111 +204,141 @@ export default function Home() {
       <section className="booking-section" id="book">
         <div className="shell booking-layout">
           <div className="booking-copy">
-            <p className="eyebrow">LOCK IN YOUR FIRST SESSION</p>
+            <p className="eyebrow">LOCK IN YOUR SESSION</p>
             <h2>Ready to train?</h2>
-            <p>Pay at your session — cash is welcome — pick your package and first-session time right in the calendar below.</p>
-            {paymentMethod === "card" && (
-              <div className="selected-card">
-                <span>Selected training</span>
-                <strong>{selectedPackage.shortName}</strong>
-                <div><b>${selectedPackage.price}</b> total <i>•</i> ${selectedPackage.deposit} deposit online</div>
+            <p>Pick your session, your bike, and your time below. Pay at your session — cash is welcome — or reserve online with a $20 deposit.</p>
+            <div className="selected-card">
+              <span>Selected training</span>
+              <strong>{selectedPackage.shortName}</strong>
+              <div>
+                <b>${selectedPackage.price}</b> total <i>•</i> {selectedPackage.durationMinutes} min
+                {paymentMethod === "card" ? <> <i>•</i> ${selectedPackage.deposit} deposit online</> : null}
               </div>
-            )}
+            </div>
             <div className="safety-note"><strong>Progression over pressure.</strong><br/>Riding skill develops differently for every person. Balance Point Certified does not guarantee that a rider will reach balance point within a specific number of sessions.</div>
           </div>
 
           <div className="booking-form">
-            <div className="booking-step">
-              <span className="step-index">01</span>
-              <div className="step-body">
-                <span className="step-label">How would you like to pay?</span>
-                <div className="pay-options">
-                  <button type="button" className={`pay-option ${paymentMethod === "cash" ? "active" : ""}`} onClick={() => setPaymentMethod("cash")}>
-                    <span className="pay-option-icon">$</span>
-                    <span className="pay-option-copy">
-                      <strong>Pay at my session</strong>
-                      <small>Pick any package below, book now, pay in person. Cash is welcome.</small>
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`pay-option ${paymentMethod === "card" ? "active" : ""} ${onlineDepositEnabled ? "" : "pay-option-disabled"}`}
-                    disabled={!onlineDepositEnabled}
-                    onClick={() => setPaymentMethod("card")}
-                  >
-                    <span className="pay-option-icon card">▢</span>
-                    <span className="pay-option-copy">
-                      <strong>Reserve with a deposit online{onlineDepositEnabled ? "" : " — coming soon"}</strong>
-                      <small>Card via secure checkout. The remaining balance is collected directly by Balance Point Certified.</small>
-                    </span>
-                  </button>
+            <form onSubmit={handleBooking}>
+              <div className="booking-step">
+                <span className="step-index">01</span>
+                <div className="step-body">
+                  <span className="step-label">Session and first-available time</span>
+                  <label>
+                    Training session
+                    <select value={packageId} onChange={(e) => handlePackageChange(e.target.value)}>
+                      {packages.map((pkg) => <option value={pkg.id} key={pkg.id}>{pkg.name} — ${pkg.price}</option>)}
+                    </select>
+                  </label>
+                  <label>Choose a date<input type="date" value={date} onChange={(e) => loadSlots(e.target.value)} required /></label>
+
+                  <div className="time-field">
+                    <span className="field-label">Available times ({selectedPackage.durationMinutes} min session)</span>
+                    {loadingSlots && <p className="muted">Checking the training calendar…</p>}
+                    {!loadingSlots && date && slots.length === 0 && <p className="muted">No open times on this date. Try another day.</p>}
+                    <div className="slot-grid">
+                      {slots.map((slot) => (
+                        <button type="button" key={slot.start} className={sessionStart === slot.start ? "slot active" : "slot"} onClick={() => setSessionStart(slot.start)}>{slot.label}</button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="booking-step booking-step-last">
-              <span className="step-index">02</span>
-              <div className="step-body">
-                {paymentMethod === "cash" ? (
-                  <>
-                    <span className="step-label">Pick your package and first-session time</span>
-                    <p className="widget-intro">Choose a package below, pick an open slot, and confirm. You&apos;ll get a text + email confirmation and reminders before you ride.</p>
-                    <div className="widget-frame">
-                      <div className="widget-frame-bar"><span/><span/><span/></div>
-                      <iframe
-                        key={bookingWidgetUrl}
-                        ref={bookingIframeRef}
-                        src={`${bookingWidgetUrl}?embed=true`}
-                        title="Book your Balance Point Certified training session"
-                        className="booking-widget"
-                        loading="lazy"
-                        allow="clipboard-write"
-                        onLoad={() => {
-                          // Give the calendar focus once, right after it loads, so the very
-                          // first real click on a package registers instead of just
-                          // shifting focus into the iframe (a common cross-origin iframe quirk).
-                          requestAnimationFrame(() => bookingIframeRef.current?.focus());
-                        }}
-                      />
-                    </div>
-                    <p className="microcopy">Nothing is charged online. Your session is confirmed once you tap “Confirm Booking”; the package balance is paid at your session.</p>
-                  </>
-                ) : (
-                  <form onSubmit={handleBooking}>
-                    <span className="step-label">Package and details</span>
-                    <label>
-                      Training package
-                      <select value={packageId} onChange={(e) => setPackageId(e.target.value)}>
-                        {packages.map((pkg) => <option value={pkg.id} key={pkg.id}>{pkg.name} — ${pkg.price}</option>)}
-                      </select>
-                    </label>
-                    <div className="field-row">
-                      <label>Full name<input name="name" required autoComplete="name" placeholder="Rider name" /></label>
-                      <label>Phone<input name="phone" required autoComplete="tel" placeholder="(555) 555-5555" /></label>
-                    </div>
-                    <label>Email<input type="email" name="email" required autoComplete="email" placeholder="you@example.com" /></label>
-                    <label>Choose a date<input type="date" value={date} onChange={(e) => loadSlots(e.target.value)} required /></label>
-
-                    <div className="time-field">
-                      <span className="field-label">Available first-session times</span>
-                      {loadingSlots && <p className="muted">Checking the training calendar…</p>}
-                      {!loadingSlots && date && slots.length === 0 && <p className="muted">No open times on this date. Try another day.</p>}
-                      <div className="slot-grid">
-                        {slots.map((slot) => (
-                          <button type="button" key={slot.start} className={sessionStart === slot.start ? "slot active" : "slot"} onClick={() => setSessionStart(slot.start)}>{slot.label}</button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <label className="waiver"><input type="checkbox" name="waiver" required /><span>I understand motorcycle stunt training involves inherent risk, I will follow instructor safety directions, and a full training waiver may be required before riding.</span></label>
-
-                    {error && <div className="form-error">{error}</div>}
-                    <button className="button primary submit" disabled={submitting}>{submitting ? "Opening secure checkout…" : `Continue to secure payment — $${selectedPackage.deposit}`}</button>
-                    <p className="microcopy">Only the ${selectedPackage.deposit} reservation deposit is processed online through Stripe. Your selected calendar time is held briefly while you complete checkout; the remaining balance is handled directly with the owner.</p>
-                  </form>
-                )}
+              <div className="booking-step">
+                <span className="step-index">02</span>
+                <div className="step-body">
+                  <span className="step-label">Your info</span>
+                  <div className="field-row">
+                    <label>Full name<input name="name" required autoComplete="name" placeholder="Rider name" /></label>
+                    <label>Phone<input name="phone" required autoComplete="tel" placeholder="(555) 555-5555" /></label>
+                  </div>
+                  <label>Email<input type="email" name="email" required autoComplete="email" placeholder="you@example.com" /></label>
+                </div>
               </div>
-            </div>
+
+              <div className="booking-step">
+                <span className="step-index">03</span>
+                <div className="step-body">
+                  <span className="step-label">Which bike will you ride?</span>
+                  <div className="choice-options">
+                    <button type="button" className={`choice-option ${bikeChoice === "own" ? "active" : ""}`} onClick={() => setBikeChoice("own")}>
+                      <span className="choice-option-icon">🏍</span>
+                      <span className="choice-option-copy">
+                        <strong>My own motorcycle</strong>
+                        <small>Ride your own bike for the full length of the session.</small>
+                      </span>
+                    </button>
+                    <button type="button" className={`choice-option ${bikeChoice === "trainer" ? "active" : ""}`} onClick={() => setBikeChoice("trainer")}>
+                      <span className="choice-option-icon">R3</span>
+                      <span className="choice-option-copy">
+                        <strong>School&apos;s trainer bike (R3)</strong>
+                        <small>We supply the bike. Because it&apos;s shared, your seat time on it is shorter than the full session — the price doesn&apos;t change.</small>
+                      </span>
+                    </button>
+                  </div>
+                  {bikeChoice === "own" && (
+                    <>
+                      <div className="field-row">
+                        <label>Motorcycle year<input value={motoYear} onChange={(e) => setMotoYear(e.target.value)} required inputMode="numeric" placeholder="2022" /></label>
+                        <label>Motorcycle make<input value={motoMake} onChange={(e) => setMotoMake(e.target.value)} required placeholder="Yamaha" /></label>
+                      </div>
+                      <label>Motorcycle model<input value={motoModel} onChange={(e) => setMotoModel(e.target.value)} required placeholder="YZF-R3" /></label>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="booking-step">
+                <span className="step-index">04</span>
+                <div className="step-body">
+                  <span className="step-label">Safety waiver</span>
+                  <label className="waiver"><input type="checkbox" name="waiver" required /><span>I understand motorcycle stunt training involves inherent risk, I will follow instructor safety directions, and a full training waiver may be required before riding.</span></label>
+                </div>
+              </div>
+
+              <div className="booking-step booking-step-last">
+                <span className="step-index">05</span>
+                <div className="step-body">
+                  <span className="step-label">How would you like to pay?</span>
+                  <div className="pay-options">
+                    <button type="button" className={`pay-option ${paymentMethod === "cash" ? "active" : ""}`} onClick={() => setPaymentMethod("cash")}>
+                      <span className="pay-option-icon">$</span>
+                      <span className="pay-option-copy">
+                        <strong>Pay at my session</strong>
+                        <small>Book now, pay in person. Cash is welcome.</small>
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`pay-option ${paymentMethod === "card" ? "active" : ""} ${onlineDepositEnabled ? "" : "pay-option-disabled"}`}
+                      disabled={!onlineDepositEnabled}
+                      onClick={() => setPaymentMethod("card")}
+                    >
+                      <span className="pay-option-icon card">▢</span>
+                      <span className="pay-option-copy">
+                        <strong>Reserve with a deposit online{onlineDepositEnabled ? "" : " — coming soon"}</strong>
+                        <small>Card via secure checkout. The remaining balance is collected directly by Balance Point Certified.</small>
+                      </span>
+                    </button>
+                  </div>
+
+                  {error && <div className="form-error">{error}</div>}
+                  <button className="button primary submit" disabled={submitting}>
+                    {submitting
+                      ? "Booking…"
+                      : paymentMethod === "card"
+                        ? `Continue to secure payment — $${selectedPackage.deposit}`
+                        : "Confirm booking"}
+                  </button>
+                  <p className="microcopy">
+                    {paymentMethod === "card"
+                      ? `Only the $${selectedPackage.deposit} reservation deposit is processed online through Stripe. Your selected calendar time is held briefly while you complete checkout; the remaining balance is handled directly with the owner.`
+                      : "Nothing is charged online. Your session is confirmed on submit; the full package balance is paid at your session."}
+                  </p>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
       </section>
