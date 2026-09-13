@@ -178,7 +178,11 @@ input:focus,select:focus { border-color: rgba(39,199,255,.65); box-shadow: 0 0 0
 .widget-frame:hover .widget-frame-bar span:nth-child(3) { box-shadow: 0 0 8px rgba(40,200,64,.7); }
 .booking-widget {
   width: 100%;
-  min-height: 700px;
+  /* Sulus's widget has no auto-resize signal, so this is a static height sized
+     to the tallest booking step ("Your details", ~649px) plus a small buffer
+     — reduced from 700px, which left visible empty space on shorter steps
+     (service/date/time selection). */
+  min-height: 660px;
   border: 0;
   display: block;
   /* The booking widget itself now ships a native dark theme (set via Sulus's
