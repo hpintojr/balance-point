@@ -84,7 +84,7 @@ img, svg { display: block; }
 .section-head { display: grid; grid-template-columns: 1fr .62fr; align-items: end; gap: 60px; margin-bottom: 50px; }
 .section-head h2 { font-size: clamp(42px,4.4vw,64px); }
 .section-head > p { color: #a9b2c0; line-height: 1.7; margin-bottom: 28px; }
-.package-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
+.package-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
 .package-card { position: relative; min-height: 600px; padding: 28px; border-radius: 22px; background: linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025)); border: 1px solid rgba(255,255,255,.10); display: flex; flex-direction: column; overflow: hidden; }
 .package-card:before { content: ""; position: absolute; inset: 0 0 auto; height: 3px; background: linear-gradient(90deg,transparent,var(--cyan),var(--magenta),transparent); opacity: .55; }
 .package-card.featured { border-color: rgba(255,35,200,.45); background: radial-gradient(circle at 100% 0%,rgba(255,35,200,.13),transparent 44%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.028)); transform: translateY(-10px); box-shadow: 0 24px 70px rgba(255,35,200,.08); }
@@ -164,6 +164,17 @@ input:focus,select:focus { border-color: rgba(39,199,255,.65); box-shadow: 0 0 0
 .pay-option-copy { display: grid; gap: 3px; }
 .pay-option-copy strong { font-size: 14px; color: #f2f4f9; }
 .pay-option-copy small { color: #8d97a6; font-weight: 500; line-height: 1.4; }
+
+/* Generic two-way choice cards (bike selection, etc.) */
+.choice-options { display: grid; gap: 10px; margin-bottom: 18px; }
+.choice-option { width: 100%; display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: center; text-align: left; padding: 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.03); color: inherit; transition: .2s ease; }
+.choice-option:hover { border-color: rgba(255,255,255,.24); background: rgba(255,255,255,.05); }
+.choice-option.active { border-color: var(--cyan); background: rgba(39,199,255,.08); box-shadow: 0 0 0 1px rgba(39,199,255,.25), 0 0 26px rgba(39,199,255,.10); }
+.choice-option-icon { flex: 0 0 auto; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); font-weight: 900; font-size: 13px; color: var(--green); }
+.choice-option.active .choice-option-icon { border-color: rgba(39,199,255,.5); color: var(--cyan); box-shadow: 0 0 14px rgba(39,199,255,.25); }
+.choice-option-copy { display: grid; gap: 3px; }
+.choice-option-copy strong { font-size: 14px; color: #f2f4f9; }
+.choice-option-copy small { color: #8d97a6; font-weight: 500; line-height: 1.4; }
 
 /* Embedded calendar frame */
 .widget-frame { border-radius: 18px; overflow: hidden; background: #0b1019; border: 1px solid rgba(255,255,255,.14); box-shadow: 0 20px 46px rgba(0,0,0,.38); transition: border-color .2s ease, box-shadow .2s ease; }
