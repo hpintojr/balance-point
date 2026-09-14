@@ -132,8 +132,19 @@ img, svg { display: block; }
 .booking-form { background: rgba(8,12,20,.88); border: 1px solid rgba(255,255,255,.11); border-radius: 24px; padding: 34px; box-shadow: var(--shadow); }
 .booking-form.booking-embed { padding: 12px; }
 .booking-form.booking-embed iframe { border-radius: 16px; min-height: 900px; }
+.booking-form-compact { padding: 16px; }
+.booking-form-compact iframe { border-radius: 16px; min-height: 900px; }
+
+/* Rider intake (step 1 of the booking flow) */
+.intake-steps { display: flex; gap: 18px; margin-bottom: 22px; font-size: 11px; text-transform: uppercase; letter-spacing: .1em; font-weight: 800; color: #667085; }
+.intake-steps .step-active { color: var(--cyan); }
+.intake-motorcycle-row { grid-template-columns: 1fr 1fr 1fr; }
+.calendar-hint { margin: 0 0 16px; padding: 14px 16px; background: rgba(39,199,255,.06); border: 1px solid rgba(39,199,255,.2); border-radius: 12px; color: #d8dee8; }
+.calendar-hint strong { color: #fff; }
+.link-button { background: none; border: 0; padding: 0; color: var(--cyan); font-weight: 700; text-decoration: underline; cursor: pointer; display: inline; width: auto; min-height: 0; }
 .booking-form label,.field-label { display: grid; gap: 8px; color: #d8dee8; font-size: 12px; font-weight: 750; }
 .booking-form > label,.field-row,.time-field,fieldset { margin-bottom: 18px; }
+fieldset { border: 0; padding: 0; min-width: 0; }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 input,select { width: 100%; background: #0b1019; color: #f7f9fc; border: 1px solid rgba(255,255,255,.12); border-radius: 11px; padding: 13px 14px; outline: none; }
 input:focus,select:focus { border-color: rgba(39,199,255,.65); box-shadow: 0 0 0 3px rgba(39,199,255,.08); }
@@ -266,6 +277,7 @@ footer { padding: 58px 0 34px; border-top: 1px solid var(--line); }
 
 @media (max-width: 680px) {
   .shell { width: min(100% - 24px,1180px); }
+  .field-row,.intake-motorcycle-row { grid-template-columns: 1fr; }
   .cinematic-hero { min-height: 900px; }
   .hero-shell { min-height: 690px; padding-top: 28px; }
   .hero-logo { width: min(360px,86vw); margin: -42px auto -22px; border-radius: 15px; }

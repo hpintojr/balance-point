@@ -10,6 +10,9 @@ export type TrainingPackage = {
   eyebrow: string;
   description: string;
   bullets: string[];
+  /** Can this rider choose between the school's R3 trainer bike and their own motorcycle?
+   *  When false, the package already requires the rider's own bike. */
+  bikeChoiceEnabled: boolean;
 };
 
 export const packages: TrainingPackage[] = [
@@ -25,6 +28,7 @@ export const packages: TrainingPackage[] = [
     eyebrow: "MOST BOOKED",
     description: "One hour of one-on-one coaching. Ride the school's R3 trainer bike or your own motorcycle — your choice at booking.",
     bullets: ["60-minute private session", "Use the school's R3 or your own bike", "Clutch-up, rear-brake, balance-point coaching", "Video feedback"],
+    bikeChoiceEnabled: true,
   },
   {
     id: "personal-bike-express",
@@ -37,6 +41,7 @@ export const packages: TrainingPackage[] = [
     eyebrow: "BRING YOUR OWN BIKE",
     description: "A focused one-hour session on your own motorcycle — a lower rate since you're supplying the bike.",
     bullets: ["60-minute private session", "Ride your own motorcycle", "Same one-on-one coaching", "Best rate for riders who already own a bike"],
+    bikeChoiceEnabled: false,
   },
   {
     id: "extended-personal-bike-session",
@@ -49,6 +54,7 @@ export const packages: TrainingPackage[] = [
     eyebrow: "GO DEEPER",
     description: "Two and a half hours of extended coaching time on your own motorcycle for riders ready to put in extra reps.",
     bullets: ["150-minute private session", "Ride your own motorcycle", "Extended reps and correction time", "Most coaching time per session"],
+    bikeChoiceEnabled: false,
   },
 ];
 

@@ -74,6 +74,72 @@ export async function triggerSequenzy(data: BookingNotification) {
   return { sent: true };
 }
 
+export type RiderIntake = {
+  name: string;
+  email: string;
+  phone: string;
+  packageId: string;
+  packageName: string;
+  bikeChoice: BikeChoice;
+  motorcycleYear?: string;
+  motorcycleMake?: string;
+  motorcycleModel?: string;
+};
+
+/**
+ * Sulus's own "Rider Booking Form" (assigned to the Training Session calendar) does not
+ * actually render on the live public booking widget — the widget always falls back to its
+ * generic First/Last/Email/Phone/Notes fields, regardless of the form assignment. There is
+ * no supported prefill mechanism for the embed either (no query params, no postMessage API).
+ *
+ * So we collect the bike choice / motorcycle year-make-model / waiver acknowledgment
+ * ourselves on balancepointcertified.com, *before* the rider reaches the embedded calendar,
+ * and push it straight into Sulus as a contact upsert (same Inbound Webhook workflow used by
+ * pushToCRM). Sulus's booking widget matches/creates the contact by email, so as long as the
+ * rider books with the same email they used here, the appointment that gets created a moment
+ * later in the embedded calendar lands on the same contact record — carrying the custom
+ * field data along with it even though it never touched the widget itself.
+ */
+export async function pushRiderIntakeToCRM(data: RiderIntake) {
+  const webhookUrl = process.env.SULUS_CRM_WEBHOOK_URL;
+  if (!webhookUrl) return { skipped: true };
+
+  const locationId = process.env.SULUS_CRM_LOCATION_ID || "blZQxRCCKPDWhePrhcDg";
+  const secret = process.env.SULUS_CRM_WEBHOOK_TOKEN;
+  const body = JSON.stringify({
+    source: "balancepointcertified.com",
+    event: "rider.intake_submitted",
+    locationId,
+    contact: {
+      firstName: data.name.split(" ")[0],
+      lastName: data.name.split(" ").slice(1).join(" "),
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      motorcycle_year: data.bikeChoice === "own" ? data.motorcycleYear || "" : "",
+      motorcycle_make: data.bikeChoice === "own" ? data.motorcycleMake || "" : "",
+      motorcycle_model: data.bikeChoice === "own" ? data.motorcycleModel || "" : "",
+      bike_choice: data.bikeChoice === "own" ? "Own motorcycle" : "School's trainer bike (R3)",
+      waiver_acknowledged: true,
+    },
+    intake: {
+      packageId: data.packageId,
+      packageName: data.packageName,
+      bikeChoice: data.bikeChoice,
+      usingSchoolTrainerBike: data.bikeChoice === "trainer",
+    },
+  });
+
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (secret) {
+    headers["X-Webhook-Signature"] = `sha256=${createHmac("sha256", secret).update(body).digest("hex")}`;
+  }
+
+  const response = await fetch(webhookUrl, { method: "POST", headers, body });
+  if (!response.ok) throw new Error(`CRM intake webhook failed: ${response.status}`);
+  return { sent: true };
+}
+
 export async function pushToCRM(
   data: BookingNotification & { packageId: string; stripeSessionId?: string; paymentMethod: "card_deposit" | "cash" },
 ) {

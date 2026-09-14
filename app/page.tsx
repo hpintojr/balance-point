@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { packages } from "@/lib/packages";
 
 const BOOKING_EMBED_URL = "https://crm.sulus.ai/b/training-session?embed=true";
@@ -18,13 +18,87 @@ function FeatureIcon({ type }: { type: "skills" | "progress" | "coach" | "cert" 
   return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l3 3v8.5M15 3v4h3M9 9h6M9 12h4"/><circle cx="15.5" cy="17" r="2.5"/><path d="M14 19l-.5 2 2-1 2 1-.5-2"/></svg>;
 }
 
+type BikeChoice = "own" | "trainer";
+
+type IntakeState = {
+  name: string;
+  email: string;
+  phone: string;
+  bikeChoice: BikeChoice;
+  motorcycleYear: string;
+  motorcycleMake: string;
+  motorcycleModel: string;
+  waiverAccepted: boolean;
+};
+
+const EMPTY_INTAKE: IntakeState = {
+  name: "",
+  email: "",
+  phone: "",
+  bikeChoice: "own",
+  motorcycleYear: "",
+  motorcycleMake: "",
+  motorcycleModel: "",
+  waiverAccepted: false,
+};
+
 export default function Home() {
   const [packageId, setPackageId] = useState("standard-private-lesson");
   const [menuOpen, setMenuOpen] = useState(false);
   const selectedPackage = useMemo(() => packages.find((p) => p.id === packageId)!, [packageId]);
 
+  const [intakeStep, setIntakeStep] = useState<"details" | "calendar">("details");
+  const [intake, setIntake] = useState<IntakeState>(EMPTY_INTAKE);
+  const [intakeError, setIntakeError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
   function handlePackageChange(nextPackageId: string) {
     setPackageId(nextPackageId);
+    const nextPackage = packages.find((p) => p.id === nextPackageId);
+    if (nextPackage && !nextPackage.bikeChoiceEnabled) {
+      setIntake((prev) => ({ ...prev, bikeChoice: "own" }));
+    }
+  }
+
+  function updateIntake<K extends keyof IntakeState>(key: K, value: IntakeState[K]) {
+    setIntake((prev) => ({ ...prev, [key]: value }));
+  }
+
+  async function submitRiderDetails(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIntakeError(null);
+
+    if (!intake.name.trim() || !intake.email.trim() || !intake.phone.trim()) {
+      setIntakeError("Add your name, email, and phone number.");
+      return;
+    }
+    if (!intake.waiverAccepted) {
+      setIntakeError("Please acknowledge the waiver to continue.");
+      return;
+    }
+    if (intake.bikeChoice === "own" && (!intake.motorcycleYear.trim() || !intake.motorcycleMake.trim() || !intake.motorcycleModel.trim())) {
+      setIntakeError("Add your motorcycle's year, make, and model.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const response = await fetch("/api/rider-intake", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...intake, packageId }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setIntakeError(data.error || "Could not save your details. Please try again.");
+        return;
+      }
+      setIntakeStep("calendar");
+    } catch {
+      setIntakeError("Could not reach the booking system. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   const closeMenu = () => setMenuOpen(false);
@@ -148,14 +222,91 @@ export default function Home() {
             <div className="safety-note"><strong>Progression over pressure.</strong><br/>Riding skill develops differently for every person. Balance Point Certified does not guarantee that a rider will reach balance point within a specific number of sessions.</div>
           </div>
 
-          <div className="booking-form booking-embed">
-            <iframe
-              src={BOOKING_EMBED_URL}
-              width="100%"
-              height="900"
-              style={{ border: "none", borderRadius: "12px", display: "block" }}
-              title="Book a training session with Balance Point Certified"
-            />
+          <div className={intakeStep === "calendar" ? "booking-form booking-form-compact" : "booking-form"}>
+            {intakeStep === "details" ? (
+              <form className="intake-form" onSubmit={submitRiderDetails}>
+                <div className="intake-steps"><span className="step-active">1. Your details</span><span>2. Pick a time</span></div>
+
+                <label>
+                  Full name
+                  <input type="text" required value={intake.name} onChange={(e) => updateIntake("name", e.target.value)} autoComplete="name" />
+                </label>
+                <div className="field-row">
+                  <label>
+                    Email
+                    <input type="email" required value={intake.email} onChange={(e) => updateIntake("email", e.target.value)} autoComplete="email" />
+                  </label>
+                  <label>
+                    Phone
+                    <input type="tel" required value={intake.phone} onChange={(e) => updateIntake("phone", e.target.value)} autoComplete="tel" />
+                  </label>
+                </div>
+
+                {selectedPackage.bikeChoiceEnabled ? (
+                  <fieldset>
+                    <p className="field-label">Which motorcycle will you use for your session?</p>
+                    <div className="choice-options">
+                      <button type="button" className={intake.bikeChoice === "own" ? "choice-option active" : "choice-option"} onClick={() => updateIntake("bikeChoice", "own")}>
+                        <span className="choice-option-icon">1</span>
+                        <span className="choice-option-copy"><strong>My own motorcycle</strong></span>
+                      </button>
+                      <button type="button" className={intake.bikeChoice === "trainer" ? "choice-option active" : "choice-option"} onClick={() => updateIntake("bikeChoice", "trainer")}>
+                        <span className="choice-option-icon">2</span>
+                        <span className="choice-option-copy"><strong>School&apos;s trainer bike (R3)</strong></span>
+                      </button>
+                    </div>
+                    <p className="muted">Same price and riding time either way.</p>
+                  </fieldset>
+                ) : (
+                  <fieldset>
+                    <p className="field-label">This session uses your own motorcycle.</p>
+                  </fieldset>
+                )}
+
+                {intake.bikeChoice === "own" && (
+                  <div className="field-row intake-motorcycle-row">
+                    <label>
+                      Motorcycle year
+                      <input type="text" required value={intake.motorcycleYear} onChange={(e) => updateIntake("motorcycleYear", e.target.value)} placeholder="2019" />
+                    </label>
+                    <label>
+                      Motorcycle make
+                      <input type="text" required value={intake.motorcycleMake} onChange={(e) => updateIntake("motorcycleMake", e.target.value)} placeholder="Yamaha" />
+                    </label>
+                    <label>
+                      Motorcycle model
+                      <input type="text" required value={intake.motorcycleModel} onChange={(e) => updateIntake("motorcycleModel", e.target.value)} placeholder="R3" />
+                    </label>
+                  </div>
+                )}
+
+                <label className="waiver">
+                  <input type="checkbox" checked={intake.waiverAccepted} onChange={(e) => updateIntake("waiverAccepted", e.target.checked)} />
+                  <span>I understand motorcycle training involves inherent risk, I am a licensed rider, and I accept the Balance Point Certified liability waiver. Package balance is paid at my session (cash welcome).</span>
+                </label>
+
+                {intakeError && <p className="form-error">{intakeError}</p>}
+
+                <button type="submit" className="button card-button submit" disabled={submitting}>
+                  {submitting ? "Saving..." : "Continue to calendar"}
+                </button>
+              </form>
+            ) : (
+              <div className="intake-calendar">
+                <div className="intake-steps"><span>1. Your details</span><span className="step-active">2. Pick a time</span></div>
+                <p className="calendar-hint">
+                  Almost done — book your time below using <strong>{intake.email}</strong> (same email you just entered) so it matches to your details.{" "}
+                  <button type="button" className="link-button" onClick={() => setIntakeStep("details")}>Edit your details</button>
+                </p>
+                <iframe
+                  src={BOOKING_EMBED_URL}
+                  width="100%"
+                  height="900"
+                  style={{ border: "none", borderRadius: "12px", display: "block" }}
+                  title="Book a training session with Balance Point Certified"
+                />
+              </div>
+            )}
           </div>
         </div>
       </section>
