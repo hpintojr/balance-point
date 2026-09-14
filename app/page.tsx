@@ -1,10 +1,9 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
-import { getPackage, packages } from "@/lib/packages";
+import { useMemo, useState } from "react";
+import { packages } from "@/lib/packages";
 
-type Slot = { start: string; label: string };
-type BikeChoice = "own" | "trainer";
+const BOOKING_EMBED_URL = "https://crm.sulus.ai/b/training-session?embed=true";
 
 function FeatureIcon({ type }: { type: "skills" | "progress" | "coach" | "cert" }) {
   if (type === "skills") {
@@ -21,86 +20,11 @@ function FeatureIcon({ type }: { type: "skills" | "progress" | "coach" | "cert" 
 
 export default function Home() {
   const [packageId, setPackageId] = useState("standard-private-lesson");
-  const [date, setDate] = useState("");
-  const [slots, setSlots] = useState<Slot[]>([]);
-  const [sessionStart, setSessionStart] = useState("");
-  const [loadingSlots, setLoadingSlots] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "card">("cash");
-  const [bikeChoice, setBikeChoice] = useState<BikeChoice>("own");
-  const [motoYear, setMotoYear] = useState("");
-  const [motoMake, setMotoMake] = useState("");
-  const [motoModel, setMotoModel] = useState("");
-  const onlineDepositEnabled = process.env.NEXT_PUBLIC_ONLINE_DEPOSIT === "true";
   const selectedPackage = useMemo(() => packages.find((p) => p.id === packageId)!, [packageId]);
-
-  async function loadSlots(nextDate: string, pkgIdOverride?: string) {
-    setDate(nextDate);
-    setSessionStart("");
-    setSlots([]);
-    setError("");
-    if (!nextDate) return;
-    setLoadingSlots(true);
-    try {
-      const activePkg = getPackage(pkgIdOverride ?? packageId) ?? selectedPackage;
-      const response = await fetch(
-        `/api/availability?date=${encodeURIComponent(nextDate)}&durationMinutes=${activePkg.durationMinutes}`,
-      );
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Could not load availability.");
-      setSlots(data.slots || []);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not load availability.");
-    } finally {
-      setLoadingSlots(false);
-    }
-  }
 
   function handlePackageChange(nextPackageId: string) {
     setPackageId(nextPackageId);
-    if (date) void loadSlots(date, nextPackageId);
-  }
-
-  async function handleBooking(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError("");
-    if (!sessionStart) {
-      setError("Choose an available first-session time.");
-      return;
-    }
-    if (bikeChoice === "own" && (!motoYear.trim() || !motoMake.trim() || !motoModel.trim())) {
-      setError("Add your motorcycle's year, make, and model — or choose the school's trainer bike.");
-      return;
-    }
-    const form = new FormData(event.currentTarget);
-    setSubmitting(true);
-    try {
-      const endpoint = paymentMethod === "card" ? "/api/checkout" : "/api/book-cash";
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          packageId,
-          sessionStart,
-          name: form.get("name"),
-          email: form.get("email"),
-          phone: form.get("phone"),
-          waiverAccepted: form.get("waiver") === "on",
-          bikeChoice,
-          motorcycleYear: motoYear,
-          motorcycleMake: motoMake,
-          motorcycleModel: motoModel,
-        }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Booking failed.");
-      window.location.href = data.url;
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Booking failed.");
-      setSubmitting(false);
-    }
   }
 
   const closeMenu = () => setMenuOpen(false);
@@ -206,139 +130,32 @@ export default function Home() {
           <div className="booking-copy">
             <p className="eyebrow">LOCK IN YOUR SESSION</p>
             <h2>Ready to train?</h2>
-            <p>Pick your session, your bike, and your time below. Pay at your session — cash is welcome — or reserve online with a $20 deposit.</p>
+            <p>Pick your session, your bike, and your time in the booking calendar. Pay at your session — cash is welcome.</p>
             <div className="selected-card">
-              <span>Selected training</span>
+              <span>Starting point</span>
               <strong>{selectedPackage.shortName}</strong>
               <div>
                 <b>${selectedPackage.price}</b> total <i>•</i> {selectedPackage.durationMinutes} min
-                {paymentMethod === "card" ? <> <i>•</i> ${selectedPackage.deposit} deposit online</> : null}
               </div>
+            </div>
+            <div className="package-quicklinks">
+              {packages.map((pkg) => (
+                <button type="button" key={pkg.id} className={pkg.id === packageId ? "quicklink active" : "quicklink"} onClick={() => handlePackageChange(pkg.id)}>
+                  {pkg.shortName}
+                </button>
+              ))}
             </div>
             <div className="safety-note"><strong>Progression over pressure.</strong><br/>Riding skill develops differently for every person. Balance Point Certified does not guarantee that a rider will reach balance point within a specific number of sessions.</div>
           </div>
 
-          <div className="booking-form">
-            <form onSubmit={handleBooking}>
-              <div className="booking-step">
-                <span className="step-index">01</span>
-                <div className="step-body">
-                  <span className="step-label">Session and first-available time</span>
-                  <label>
-                    Training session
-                    <select value={packageId} onChange={(e) => handlePackageChange(e.target.value)}>
-                      {packages.map((pkg) => <option value={pkg.id} key={pkg.id}>{pkg.name} — ${pkg.price}</option>)}
-                    </select>
-                  </label>
-                  <label>Choose a date<input type="date" value={date} onChange={(e) => loadSlots(e.target.value)} required /></label>
-
-                  <div className="time-field">
-                    <span className="field-label">Available times ({selectedPackage.durationMinutes} min session)</span>
-                    {loadingSlots && <p className="muted">Checking the training calendar…</p>}
-                    {!loadingSlots && date && slots.length === 0 && <p className="muted">No open times on this date. Try another day.</p>}
-                    <div className="slot-grid">
-                      {slots.map((slot) => (
-                        <button type="button" key={slot.start} className={sessionStart === slot.start ? "slot active" : "slot"} onClick={() => setSessionStart(slot.start)}>{slot.label}</button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="booking-step">
-                <span className="step-index">02</span>
-                <div className="step-body">
-                  <span className="step-label">Your info</span>
-                  <div className="field-row">
-                    <label>Full name<input name="name" required autoComplete="name" placeholder="Rider name" /></label>
-                    <label>Phone<input name="phone" required autoComplete="tel" placeholder="(555) 555-5555" /></label>
-                  </div>
-                  <label>Email<input type="email" name="email" required autoComplete="email" placeholder="you@example.com" /></label>
-                </div>
-              </div>
-
-              <div className="booking-step">
-                <span className="step-index">03</span>
-                <div className="step-body">
-                  <span className="step-label">Which bike will you ride?</span>
-                  <div className="choice-options">
-                    <button type="button" className={`choice-option ${bikeChoice === "own" ? "active" : ""}`} onClick={() => setBikeChoice("own")}>
-                      <span className="choice-option-icon">🏍</span>
-                      <span className="choice-option-copy">
-                        <strong>My own motorcycle</strong>
-                        <small>Ride your own bike for the full length of the session.</small>
-                      </span>
-                    </button>
-                    <button type="button" className={`choice-option ${bikeChoice === "trainer" ? "active" : ""}`} onClick={() => setBikeChoice("trainer")}>
-                      <span className="choice-option-icon">R3</span>
-                      <span className="choice-option-copy">
-                        <strong>School&apos;s trainer bike (R3)</strong>
-                        <small>We supply the bike. Because it&apos;s shared, your seat time on it is shorter than the full session — the price doesn&apos;t change.</small>
-                      </span>
-                    </button>
-                  </div>
-                  {bikeChoice === "own" && (
-                    <>
-                      <div className="field-row">
-                        <label>Motorcycle year<input value={motoYear} onChange={(e) => setMotoYear(e.target.value)} required inputMode="numeric" placeholder="2022" /></label>
-                        <label>Motorcycle make<input value={motoMake} onChange={(e) => setMotoMake(e.target.value)} required placeholder="Yamaha" /></label>
-                      </div>
-                      <label>Motorcycle model<input value={motoModel} onChange={(e) => setMotoModel(e.target.value)} required placeholder="YZF-R3" /></label>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              <div className="booking-step">
-                <span className="step-index">04</span>
-                <div className="step-body">
-                  <span className="step-label">Safety waiver</span>
-                  <label className="waiver"><input type="checkbox" name="waiver" required /><span>I understand motorcycle stunt training involves inherent risk, I will follow instructor safety directions, and a full training waiver may be required before riding.</span></label>
-                </div>
-              </div>
-
-              <div className="booking-step booking-step-last">
-                <span className="step-index">05</span>
-                <div className="step-body">
-                  <span className="step-label">How would you like to pay?</span>
-                  <div className="pay-options">
-                    <button type="button" className={`pay-option ${paymentMethod === "cash" ? "active" : ""}`} onClick={() => setPaymentMethod("cash")}>
-                      <span className="pay-option-icon">$</span>
-                      <span className="pay-option-copy">
-                        <strong>Pay at my session</strong>
-                        <small>Book now, pay in person. Cash is welcome.</small>
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      className={`pay-option ${paymentMethod === "card" ? "active" : ""} ${onlineDepositEnabled ? "" : "pay-option-disabled"}`}
-                      disabled={!onlineDepositEnabled}
-                      onClick={() => setPaymentMethod("card")}
-                    >
-                      <span className="pay-option-icon card">▢</span>
-                      <span className="pay-option-copy">
-                        <strong>Reserve with a deposit online{onlineDepositEnabled ? "" : " — coming soon"}</strong>
-                        <small>Card via secure checkout. The remaining balance is collected directly by Balance Point Certified.</small>
-                      </span>
-                    </button>
-                  </div>
-
-                  {error && <div className="form-error">{error}</div>}
-                  <button className="button primary submit" disabled={submitting}>
-                    {submitting
-                      ? "Booking…"
-                      : paymentMethod === "card"
-                        ? `Continue to secure payment — $${selectedPackage.deposit}`
-                        : "Confirm booking"}
-                  </button>
-                  <p className="microcopy">
-                    {paymentMethod === "card"
-                      ? `Only the $${selectedPackage.deposit} reservation deposit is processed online through Stripe. Your selected calendar time is held briefly while you complete checkout; the remaining balance is handled directly with the owner.`
-                      : "Nothing is charged online. Your session is confirmed on submit; the full package balance is paid at your session."}
-                  </p>
-                </div>
-              </div>
-            </form>
+          <div className="booking-form booking-embed">
+            <iframe
+              src={BOOKING_EMBED_URL}
+              width="100%"
+              height="900"
+              style={{ border: "none", borderRadius: "12px", display: "block" }}
+              title="Book a training session with Balance Point Certified"
+            />
           </div>
         </div>
       </section>
