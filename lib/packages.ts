@@ -56,19 +56,6 @@ export const packages: TrainingPackage[] = [
     bullets: ["150-minute private session", "Ride your own motorcycle", "Extended reps and correction time", "Most coaching time per session"],
     bikeChoiceEnabled: false,
   },
-  {
-    id: "bpc-complete",
-    name: "BPC Complete (8 sessions)",
-    shortName: "BPC Complete (8 sessions)",
-    sessions: 8,
-    durationMinutes: 60,
-    price: 750,
-    deposit: 20,
-    eyebrow: "FULL CHALLENGE",
-    description: "The full 8-session Balance Point Challenge package — the most cost-effective way to work all the way through the progression toward certification.",
-    bullets: ["8 private 60-minute sessions", "Use the school's R3 or your own bike", "Full clutch-up through balance-point progression", "Best value per session"],
-    bikeChoiceEnabled: true,
-  },
 ];
 
 export function getPackage(id: string) {
