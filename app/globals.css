@@ -125,8 +125,13 @@ img, svg { display: block; }
 .selected-card div { color: #aeb7c5; }
 .selected-card b { color: #fff; }
 .selected-card i { font-style: normal; margin: 0 6px; color: #667085; }
+.package-quicklinks { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 8px; }
+.quicklink { padding: 9px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.03); color: #d8dee8; font-size: 12px; font-weight: 700; }
+.quicklink.active { border-color: var(--cyan); background: rgba(39,199,255,.1); color: #fff; }
 .safety-note { margin-top: 18px; padding: 20px; border-left: 3px solid var(--magenta); background: rgba(255,35,200,.05); color: #aeb7c5; line-height: 1.6; font-size: 13px; }
 .booking-form { background: rgba(8,12,20,.88); border: 1px solid rgba(255,255,255,.11); border-radius: 24px; padding: 34px; box-shadow: var(--shadow); }
+.booking-form.booking-embed { padding: 12px; }
+.booking-form.booking-embed iframe { border-radius: 16px; min-height: 900px; }
 .booking-form label,.field-label { display: grid; gap: 8px; color: #d8dee8; font-size: 12px; font-weight: 750; }
 .booking-form > label,.field-row,.time-field,fieldset { margin-bottom: 18px; }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
@@ -274,20 +279,6 @@ footer { padding: 58px 0 34px; border-top: 1px solid var(--line); }
   .feature-icon svg { width: 34px; height: 34px; }
   .hero-feature-bar strong { font-size: 11px; }
   .hero-feature-bar small { font-size: 10px; }
-  .manifesto,.process,.booking-section,.faq-section { padding: 82px 0; }
-  .training-section { padding: 80px 0 90px; }
-  .package-grid,.process-grid,.faq-grid { grid-template-columns: 1fr; }
-  .package-card { min-height: unset; }
-  .section-head { gap: 18px; }
-  .field-row { grid-template-columns: 1fr; }
-  .slot-grid { grid-template-columns: repeat(2,1fr); }
-  .booking-form { padding: 20px; }
-  .booking-step { grid-template-columns: 28px 1fr; gap: 12px; }
-  .step-index { width: 28px; height: 28px; font-size: 11px; }
-  .booking-widget { min-height: 620px; }
-  .footer-grid { flex-direction: column; }
-  .footer-grid > div:last-child { flex-wrap: wrap; }
-  .success-card h1 { font-size: 46px; }
 }
 
 @media (max-width: 390px) {
@@ -295,6 +286,5 @@ footer { padding: 58px 0 34px; border-top: 1px solid var(--line); }
   .hero-shell { min-height: 670px; }
   .hero-logo { width: 320px; margin-top: -38px; }
   .hero-content h1 { font-size: 42px; }
-  .hero-feature-bar > div { padding: 0 7px; }
-  .hero-feature-bar p { gap: 2px; }
+  .hero-feature-bar > div { padding: 0 7px; gap: 2px; }
 }
