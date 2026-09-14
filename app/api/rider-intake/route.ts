@@ -13,17 +13,15 @@ export async function POST(request: Request) {
     const pkg = getPackage(String(body.packageId || ""));
     if (!pkg) return NextResponse.json({ error: "Invalid package." }, { status: 400 });
 
-    const name = String(body.name || "").trim();
     const email = String(body.email || "").trim();
-    const phone = String(body.phone || "").trim();
     const waiverAccepted = body.waiverAccepted === true;
     const bikeChoice = body.bikeChoice === "trainer" ? "trainer" : "own";
     const motorcycleYear = String(body.motorcycleYear || "").trim();
     const motorcycleMake = String(body.motorcycleMake || "").trim();
     const motorcycleModel = String(body.motorcycleModel || "").trim();
 
-    if (!name || !email || !phone || !waiverAccepted) {
-      return NextResponse.json({ error: "Fill in your name, email, phone, and accept the waiver." }, { status: 400 });
+    if (!email || !waiverAccepted) {
+      return NextResponse.json({ error: "Add your email and accept the waiver." }, { status: 400 });
     }
 
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -36,9 +34,7 @@ export async function POST(request: Request) {
     }
 
     await pushRiderIntakeToCRM({
-      name,
       email,
-      phone,
       packageId: pkg.id,
       packageName: pkg.name,
       bikeChoice,

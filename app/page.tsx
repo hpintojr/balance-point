@@ -21,9 +21,7 @@ function FeatureIcon({ type }: { type: "skills" | "progress" | "coach" | "cert" 
 type BikeChoice = "own" | "trainer";
 
 type IntakeState = {
-  name: string;
   email: string;
-  phone: string;
   bikeChoice: BikeChoice;
   motorcycleYear: string;
   motorcycleMake: string;
@@ -32,9 +30,7 @@ type IntakeState = {
 };
 
 const EMPTY_INTAKE: IntakeState = {
-  name: "",
   email: "",
-  phone: "",
   bikeChoice: "own",
   motorcycleYear: "",
   motorcycleMake: "",
@@ -68,8 +64,8 @@ export default function Home() {
     event.preventDefault();
     setIntakeError(null);
 
-    if (!intake.name.trim() || !intake.email.trim() || !intake.phone.trim()) {
-      setIntakeError("Add your name, email, and phone number.");
+    if (!intake.email.trim()) {
+      setIntakeError("Add your email so we can match it to your booking.");
       return;
     }
     if (!intake.waiverAccepted) {
@@ -225,22 +221,15 @@ export default function Home() {
           <div className={intakeStep === "calendar" ? "booking-form booking-form-compact" : "booking-form"}>
             {intakeStep === "details" ? (
               <form className="intake-form" onSubmit={submitRiderDetails}>
-                <div className="intake-steps"><span className="step-active">1. Your details</span><span>2. Pick a time</span></div>
+                <div className="intake-steps"><span className="step-active">1. Bike &amp; waiver</span><span>2. Pick a time</span></div>
 
+                <p className="muted" style={{ marginTop: "-4px" }}>
+                  We just need your email here to match this to your booking — you'll enter your name and phone when you pick your time below.
+                </p>
                 <label>
-                  Full name
-                  <input type="text" required value={intake.name} onChange={(e) => updateIntake("name", e.target.value)} autoComplete="name" />
+                  Email
+                  <input type="email" required value={intake.email} onChange={(e) => updateIntake("email", e.target.value)} autoComplete="email" />
                 </label>
-                <div className="field-row">
-                  <label>
-                    Email
-                    <input type="email" required value={intake.email} onChange={(e) => updateIntake("email", e.target.value)} autoComplete="email" />
-                  </label>
-                  <label>
-                    Phone
-                    <input type="tel" required value={intake.phone} onChange={(e) => updateIntake("phone", e.target.value)} autoComplete="tel" />
-                  </label>
-                </div>
 
                 {selectedPackage.bikeChoiceEnabled ? (
                   <fieldset>
@@ -293,9 +282,9 @@ export default function Home() {
               </form>
             ) : (
               <div className="intake-calendar">
-                <div className="intake-steps"><span>1. Your details</span><span className="step-active">2. Pick a time</span></div>
+                <div className="intake-steps"><span>1. Bike &amp; waiver</span><span className="step-active">2. Pick a time</span></div>
                 <p className="calendar-hint">
-                  Almost done — book your time below using <strong>{intake.email}</strong> (same email you just entered) so it matches to your details.{" "}
+                  Almost done — enter your name and phone and pick your time below. Use <strong>{intake.email}</strong> (the same email you just entered) so it links to your bike and waiver details.{" "}
                   <button type="button" className="link-button" onClick={() => setIntakeStep("details")}>Edit your details</button>
                 </p>
                 <iframe

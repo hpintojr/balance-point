@@ -74,9 +74,7 @@ export async function triggerSequenzy(data: BookingNotification) {
 }
 
 export type RiderIntake = {
-  name: string;
   email: string;
-  phone: string;
   packageId: string;
   packageName: string;
   bikeChoice: BikeChoice;
@@ -148,23 +146,37 @@ async function findContactByEmail(email: string): Promise<string | null> {
 
 /** Create or update a contact by email, merging in tags + custom fields. */
 async function upsertSulusContact(input: {
-  name: string;
+  name?: string;
   email: string;
-  phone: string;
+  phone?: string;
   tags: string[];
   customFields: Record<string, string>;
 }): Promise<string | null> {
-  const { firstName, lastName } = splitName(input.name);
   const existingId = await findContactByEmail(input.email);
 
-  const payload = {
-    firstName,
-    lastName,
+  // When name/phone aren't provided (e.g. the rider hasn't reached Sulus's own
+  // booking widget yet, which is what actually collects those), don't blank out
+  // an existing contact's real values with placeholders — only send what we have.
+  // A brand-new contact still needs *something* in firstName/lastName, so fall
+  // back to a placeholder there.
+  const payload: Record<string, unknown> = {
     email: input.email,
-    phone: input.phone,
     tags: input.tags,
     customFields: input.customFields,
   };
+
+  if (input.name?.trim()) {
+    const { firstName, lastName } = splitName(input.name);
+    payload.firstName = firstName;
+    payload.lastName = lastName;
+  } else if (!existingId) {
+    payload.firstName = "Rider";
+    payload.lastName = "-";
+  }
+
+  if (input.phone?.trim()) {
+    payload.phone = input.phone;
+  }
 
   if (existingId) {
     const result = await sulusFetch(`/api/v1/contacts/${existingId}`, {
@@ -251,23 +263,28 @@ function bikeAndMotorcycleFields(data: {
  * Sulus's own "Rider Booking Form" (assigned to the Training Session calendar) does not
  * actually render on the live public booking widget — the widget always falls back to its
  * generic First/Last/Email/Phone/Notes fields, regardless of the form assignment. There is
- * no supported prefill mechanism for the embed either (no query params, no postMessage API).
+ * no supported prefill mechanism for the embed either (confirmed: no query params — firstName,
+ * lastName, email, phone, and notes were all tested against the live embed URL and none of
+ * them land in the form — and no postMessage API). Sulus's own generic public "calendar
+ * booking" REST endpoints (documented at seedlycrm.com/docs/help/api) also turned out not to
+ * be wired up to any real data on this account (GET /api/v1/calendars/types returns an empty
+ * list even with a valid API key), so a fully native replacement for the embed isn't currently
+ * possible either — the embed is the only way to actually reach the real calendar.
  *
- * So we collect the bike choice / motorcycle year-make-model / waiver acknowledgment
- * ourselves on balancepointcertified.com, *before* the rider reaches the embedded calendar,
- * and push it straight into Sulus via the REST API as a contact upsert (matched by email).
+ * So instead we ask for as little as possible ourselves: just the rider's email (to match
+ * the contact) plus the bike choice / motorcycle year-make-model / waiver acknowledgment the
+ * widget can't collect at all. We push that straight into Sulus via the authenticated REST API
+ * as a contact upsert (matched by email) *before* the rider reaches the embedded calendar.
  * Sulus's booking widget also matches/creates the contact by email, so as long as the rider
  * books with the same email they used here, the appointment that gets created a moment later
- * in the embedded calendar lands on the same contact record — carrying this custom field
- * data along with it even though it never touched the widget itself.
+ * in the embedded calendar lands on the same contact record — carrying this custom field data
+ * along with it, and filling in the name/phone we deliberately didn't ask for twice.
  */
 export async function pushRiderIntakeToCRM(data: RiderIntake) {
   if (!SULUS_API_KEY) return { skipped: true };
 
   const contactId = await upsertSulusContact({
-    name: data.name,
     email: data.email,
-    phone: data.phone,
     tags: ["Website Rider Intake", data.packageName],
     customFields: {
       training_package: data.packageName,
@@ -278,7 +295,7 @@ export async function pushRiderIntakeToCRM(data: RiderIntake) {
   if (contactId) {
     await createSulusOpportunity({
       contactId,
-      name: `${data.name} — ${data.packageName}`,
+      name: `${data.email} — ${data.packageName}`,
       stageName: "New Booking",
     });
   }
