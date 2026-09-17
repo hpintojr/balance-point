@@ -81,7 +81,7 @@ export async function GET(req: Request) {
       }
       const label = bike === "r3" ? "R3 (rental)" : "Own bike";
       const result = await asJson(
-        await fetch(`${apiBase}/api/v1/appointments`, {
+        await fetch(`${apiBase}/api/v1/calendars/appointments`, {
           method: "POST",
           headers,
           body: JSON.stringify({
