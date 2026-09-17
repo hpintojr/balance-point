@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 
-// TEMPORARY: verify the new calendars-scoped Sulus API key can read the
-// Training Session calendar + appointment types for Balance Point. Delete
-// this route once verified (see debug-sulus-calendar cleanup note).
+// TEMPORARY: verify the new Sulus Calendar REST API (calendars -> availability
+// -> create appointment) for Balance Point's Training Session calendar.
+// Delete this route once the native booking rebuild is verified end-to-end.
 //
-// IMPORTANT: the Sulus REST API is served from the underlying Convex
-// deployment's *.convex.site host, NOT the crm.sulus.ai app domain (that
-// domain serves the CRM's own Next.js frontend and will 200 with HTML for
-// any path). See lib/notifications.ts SULUS_API_BASE.
+// The Sulus REST API is served from the underlying Convex deployment's
+// *.convex.site host, NOT the crm.sulus.ai app domain. See lib/notifications.ts
+// SULUS_API_BASE.
+const CALENDAR_ID = "n97ds9a33htqyesvb4068661y58e9zf8"; // "Training Session" calendar
+
 export async function GET() {
   const apiKey = process.env.SULUS_API_KEY;
   const locationId = process.env.SULUS_CRM_LOCATION_ID;
@@ -15,13 +16,7 @@ export async function GET() {
 
   if (!apiKey || !locationId) {
     return NextResponse.json(
-      {
-        error: "Missing env var(s)",
-        hasApiKey: Boolean(apiKey),
-        apiKeyLength: apiKey ? apiKey.length : 0,
-        hasLocationId: Boolean(locationId),
-        locationIdLength: locationId ? locationId.length : 0,
-      },
+      { error: "Missing env var(s)", hasApiKey: Boolean(apiKey), hasLocationId: Boolean(locationId) },
       { status: 500 }
     );
   }
@@ -31,41 +26,46 @@ export async function GET() {
     "X-Sub-Account-Id": locationId,
   };
 
-  const endpoints = [
-    `${apiBase}/api/v1/calendars`,
+  // A date a few days out, within the calendar's 2-day min notice / 60-day max advance window.
+  const testDate = new Date();
+  testDate.setDate(testDate.getDate() + 5);
+  const dateStr = testDate.toISOString().slice(0, 10);
+
+  const candidates = [
+    `${apiBase}/api/v1/calendars/${CALENDAR_ID}`,
     `${apiBase}/api/v1/calendars/types`,
+    `${apiBase}/api/v1/appointment-types`,
+    `${apiBase}/api/v1/calendars/${CALENDAR_ID}/types`,
+    `${apiBase}/api/v1/calendars/availability?appointmentTypeId=${CALENDAR_ID}&date=${dateStr}`,
+    `${apiBase}/api/v1/appointments/availability?appointmentTypeId=${CALENDAR_ID}&date=${dateStr}`,
+    `${apiBase}/api/v1/availability?appointmentTypeId=${CALENDAR_ID}&date=${dateStr}`,
+    `${apiBase}/api/v1/appointments?calendarId=${CALENDAR_ID}&limit=3`,
   ];
 
   const results = await Promise.all(
-    endpoints.map(async (url) => {
+    candidates.map(async (url) => {
       try {
         const res = await fetch(url, { headers, cache: "no-store" });
         const contentType = res.headers.get("content-type") || "";
         const rawText = await res.text();
         let parsed: unknown = null;
-        let parseError: string | null = null;
         try {
           parsed = rawText ? JSON.parse(rawText) : null;
-        } catch (e) {
-          parseError = e instanceof Error ? e.message : String(e);
+        } catch {
+          // leave parsed null; rawTextPreview below shows the body
         }
         return {
           url,
           status: res.status,
           contentType,
-          rawTextLength: rawText.length,
-          rawTextPreview: rawText.slice(0, 800),
+          rawTextPreview: rawText.slice(0, 500),
           parsed,
-          parseError,
         };
       } catch (e) {
-        return {
-          url,
-          fetchError: e instanceof Error ? e.message : String(e),
-        };
+        return { url, fetchError: e instanceof Error ? e.message : String(e) };
       }
     })
   );
 
-  return NextResponse.json({ apiBase, results });
+  return NextResponse.json({ apiBase, calendarId: CALENDAR_ID, testDate: dateStr, results });
 }
