@@ -25,18 +25,41 @@ export async function GET() {
     "X-Sub-Account-Id": locationId,
   };
 
-  const [calendarsRes, typesRes] = await Promise.all([
-    fetch("https://crm.sulus.ai/api/v1/calendars", { headers, cache: "no-store" }),
-    fetch("https://crm.sulus.ai/api/v1/calendars/types", { headers, cache: "no-store" }),
-  ]);
+  const endpoints = [
+    "https://crm.sulus.ai/api/v1/calendars",
+    "https://crm.sulus.ai/api/v1/calendars/types",
+  ];
 
-  const calendars = await calendarsRes.json().catch(() => null);
-  const types = await typesRes.json().catch(() => null);
+  const results = await Promise.all(
+    endpoints.map(async (url) => {
+      try {
+        const res = await fetch(url, { headers, cache: "no-store" });
+        const contentType = res.headers.get("content-type") || "";
+        const rawText = await res.text();
+        let parsed: unknown = null;
+        let parseError: string | null = null;
+        try {
+          parsed = rawText ? JSON.parse(rawText) : null;
+        } catch (e) {
+          parseError = e instanceof Error ? e.message : String(e);
+        }
+        return {
+          url,
+          status: res.status,
+          contentType,
+          rawTextLength: rawText.length,
+          rawTextPreview: rawText.slice(0, 800),
+          parsed,
+          parseError,
+        };
+      } catch (e) {
+        return {
+          url,
+          fetchError: e instanceof Error ? e.message : String(e),
+        };
+      }
+    })
+  );
 
-  return NextResponse.json({
-    calendarsStatus: calendarsRes.status,
-    calendars,
-    typesStatus: typesRes.status,
-    types,
-  });
+  return NextResponse.json({ results });
 }
