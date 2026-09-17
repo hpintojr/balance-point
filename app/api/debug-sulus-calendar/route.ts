@@ -140,26 +140,27 @@ export async function GET(req: Request) {
         return NextResponse.json({ error: "typeId, start, end required" }, { status: 400 });
       }
       const label = bike === "r3" ? "R3 (rental)" : "Own bike";
+      const startMs = new Date(start).getTime();
+      const endMs = new Date(end).getTime();
       const payload: Record<string, unknown> =
         action === "book-minimal"
           ? {
               appointmentTypeId: typeId,
-              startTime: start,
-              endTime: end,
+              startTime: startMs,
+              endTime: endMs,
               firstName: "TEST BOOKING",
               lastName: `DELETE ME (${label})`,
               email: `test+${bike}@balancepointcertified.com`,
             }
           : {
               appointmentTypeId: typeId,
-              startTime: start,
-              endTime: end,
+              startTime: startMs,
+              endTime: endMs,
               firstName: "TEST BOOKING",
               lastName: `DELETE ME (${label})`,
               email: `test+${bike}@balancepointcertified.com`,
               notes: `Native booking pipeline test - bike choice: ${label}`,
               formData: { bikeChoice: label },
-              selectedLocation: { type: "in_person" },
             };
       const result = await asJson(
         await fetch(`${apiBase}/api/v1/calendars/appointments`, {
