@@ -71,7 +71,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ action, date, typeId, result });
     }
 
-    if (action === "book") {
+    if (action === "book" || action === "book-minimal") {
       const typeId = url.searchParams.get("typeId");
       const start = url.searchParams.get("start");
       const end = url.searchParams.get("end");
@@ -80,24 +80,35 @@ export async function GET(req: Request) {
         return NextResponse.json({ error: "typeId, start, end required" }, { status: 400 });
       }
       const label = bike === "r3" ? "R3 (rental)" : "Own bike";
+      const payload: Record<string, unknown> =
+        action === "book-minimal"
+          ? {
+              appointmentTypeId: typeId,
+              startTime: start,
+              endTime: end,
+              firstName: "TEST BOOKING",
+              lastName: `DELETE ME (${label})`,
+              email: `test+${bike}@balancepointcertified.com`,
+            }
+          : {
+              appointmentTypeId: typeId,
+              startTime: start,
+              endTime: end,
+              firstName: "TEST BOOKING",
+              lastName: `DELETE ME (${label})`,
+              email: `test+${bike}@balancepointcertified.com`,
+              notes: `Native booking pipeline test - bike choice: ${label}`,
+              formData: { bikeChoice: label },
+              selectedLocation: { type: "in_person" },
+            };
       const result = await asJson(
         await fetch(`${apiBase}/api/v1/calendars/appointments`, {
           method: "POST",
           headers,
-          body: JSON.stringify({
-            appointmentTypeId: typeId,
-            startTime: start,
-            endTime: end,
-            firstName: "TEST BOOKING",
-            lastName: `DELETE ME (${label})`,
-            email: `test+${bike}@balancepointcertified.com`,
-            notes: `Native booking pipeline test - bike choice: ${label}`,
-            formData: { bikeChoice: label },
-            selectedLocation: { type: "in_person" },
-          }),
+          body: JSON.stringify(payload),
         })
       );
-      return NextResponse.json({ action, bike, result });
+      return NextResponse.json({ action, bike, payload, result });
     }
 
     return NextResponse.json({ error: "unknown action" }, { status: 400 });
