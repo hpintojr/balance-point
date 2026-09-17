@@ -3,9 +3,15 @@ import { NextResponse } from "next/server";
 // TEMPORARY: verify the new calendars-scoped Sulus API key can read the
 // Training Session calendar + appointment types for Balance Point. Delete
 // this route once verified (see debug-sulus-calendar cleanup note).
+//
+// IMPORTANT: the Sulus REST API is served from the underlying Convex
+// deployment's *.convex.site host, NOT the crm.sulus.ai app domain (that
+// domain serves the CRM's own Next.js frontend and will 200 with HTML for
+// any path). See lib/notifications.ts SULUS_API_BASE.
 export async function GET() {
   const apiKey = process.env.SULUS_API_KEY;
   const locationId = process.env.SULUS_CRM_LOCATION_ID;
+  const apiBase = process.env.SULUS_API_BASE || "https://neat-platypus-153.convex.site";
 
   if (!apiKey || !locationId) {
     return NextResponse.json(
@@ -26,8 +32,8 @@ export async function GET() {
   };
 
   const endpoints = [
-    "https://crm.sulus.ai/api/v1/calendars",
-    "https://crm.sulus.ai/api/v1/calendars/types",
+    `${apiBase}/api/v1/calendars`,
+    `${apiBase}/api/v1/calendars/types`,
   ];
 
   const results = await Promise.all(
@@ -61,5 +67,5 @@ export async function GET() {
     })
   );
 
-  return NextResponse.json({ results });
+  return NextResponse.json({ apiBase, results });
 }
