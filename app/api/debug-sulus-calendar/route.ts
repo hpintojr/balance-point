@@ -93,6 +93,7 @@ export async function GET(req: Request) {
             email: `test+${bike}@balancepointcertified.com`,
             notes: `Native booking pipeline test - bike choice: ${label}`,
             formData: { bikeChoice: label },
+            selectedLocation: { type: "in_person" },
           }),
         })
       );
