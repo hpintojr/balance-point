@@ -8,7 +8,16 @@ export async function GET() {
   const locationId = process.env.SULUS_CRM_LOCATION_ID;
 
   if (!apiKey || !locationId) {
-    return NextResponse.json({ error: "Missing SULUS_API_KEY or SULUS_CRM_LOCATION_ID" }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: "Missing env var(s)",
+        hasApiKey: Boolean(apiKey),
+        apiKeyLength: apiKey ? apiKey.length : 0,
+        hasLocationId: Boolean(locationId),
+        locationIdLength: locationId ? locationId.length : 0,
+      },
+      { status: 500 }
+    );
   }
 
   const headers = {
