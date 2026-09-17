@@ -71,6 +71,66 @@ export async function GET(req: Request) {
       return NextResponse.json({ action, date, typeId, result });
     }
 
+    if (action === "book-probe") {
+      const typeId = url.searchParams.get("typeId");
+      const start = url.searchParams.get("start");
+      const end = url.searchParams.get("end");
+      if (!typeId || !start || !end) {
+        return NextResponse.json({ error: "typeId, start, end required" }, { status: 400 });
+      }
+      const startMs = new Date(start).getTime();
+      const endMs = new Date(end).getTime();
+      const variants: Record<string, unknown>[] = [
+        {
+          appointmentTypeId: typeId,
+          startTime: start,
+          endTime: end,
+          firstName: "Test",
+          lastName: "Rider",
+          email: "testriderprobe@balancepointcertified.com",
+        },
+        {
+          appointmentTypeId: typeId,
+          startTime: startMs,
+          endTime: endMs,
+          firstName: "Test",
+          lastName: "Rider",
+          email: "testriderprobe2@balancepointcertified.com",
+        },
+        {
+          appointmentTypeId: typeId,
+          calendarId: CALENDAR_ID,
+          startTime: start,
+          endTime: end,
+          firstName: "Test",
+          lastName: "Rider",
+          email: "testriderprobe3@balancepointcertified.com",
+        },
+        {
+          appointmentTypeId: typeId,
+          startTime: start,
+          endTime: end,
+          firstName: "Test",
+          lastName: "Rider",
+          email: "testriderprobe4@balancepointcertified.com",
+          phone: "+15555550123",
+        },
+      ];
+      const results = await Promise.all(
+        variants.map(async (payload) => {
+          const result = await asJson(
+            await fetch(`${apiBase}/api/v1/calendars/appointments`, {
+              method: "POST",
+              headers,
+              body: JSON.stringify(payload),
+            })
+          );
+          return { payload, result };
+        })
+      );
+      return NextResponse.json({ action, results });
+    }
+
     if (action === "book" || action === "book-minimal") {
       const typeId = url.searchParams.get("typeId");
       const start = url.searchParams.get("start");
